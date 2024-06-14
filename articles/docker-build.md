@@ -1,13 +1,11 @@
 ---
-title: "Docker Buildを理解したい"
+title: "docker buildコマンドでなんとなく指定しているcontextを理解する"
 emoji: "📼"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["docker", "dockerbuild"]
 published: false
 publication_name: "levtech"
 ---
-
-dockerのbuild contextとは？？
 
 # 背景
 
@@ -19,24 +17,16 @@ dockerのbuild contextとは？？
 
 調べてみたのでまとめておきます
 
+色々手助けしてくださったN先輩いつもありがとうございます(๑╹ω╹๑ )
+
 # 結論
 
-dockerのbuild contextとは、
-「dockerのbuild時にアクセスできるファイル群」
-です。
+dockerのbuild contextとは、「dockerのbuild時にアクセスできるファイル群」です。
 
-そのファイル群の実態は、
-「アーカイブファイルやテキストファイル」
-となっています。
+そのファイル群の実態は、「[アーカイブファイル](https://wa3.i-3-i.info/word11512.html)やテキストファイル」となっています。
 
-[アーカイブファイルとは？？](https://wa3.i-3-i.info/word11512.html)
-
-N先輩いつもありがとうございます(๑╹ω╹๑ )
-
-これだけ聞いても、はて？？って感じだと思うので、説明追加していきます。
-
-公式サイト置いておきます
-https://docs.docker.com/build/building/context
+これだけ聞いても、はて？？って感じだと思うので、[公式サイト](https://docs.docker.com/build/building/context
+)を参考に説明追加していきます。
 
 # 説明
 
