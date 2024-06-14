@@ -28,6 +28,8 @@ dockerのbuild contextとは、「dockerのbuild時にアクセスできるフ�
 これだけ聞いても、はて？？って感じだと思うので、[公式サイト](https://docs.docker.com/build/building/context
 )を参考に説明追加していきます。
 
+※今回はアーカイブファイルに絞った説明です。テキストファイルはイメージしやすいかと思うので省きます。
+
 # 説明
 
 ## そもそもdocker buildとは
