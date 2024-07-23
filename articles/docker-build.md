@@ -25,12 +25,42 @@ dockerのbuild contextとは、「dockerのbuild時にアクセスできるフ�
 
 そのファイル群の実態は、「[アーカイブファイル](https://wa3.i-3-i.info/word11512.html)やテキストファイル」となっています。
 
-これだけ聞いても、はて？？って感じだと思うので、[公式サイト](https://docs.docker.com/build/building/context
-)を参考に説明追加していきます。
+これだけ聞いても、はて？？って感じだと思うので、[公式サイト](https://docs.docker.com/)を参考に説明追加していきます。
 
-※今回はアーカイブファイルに絞った説明です。テキストファイルは省きます。
+:::message
+今回はアーカイブファイルに絞った説明です。テキストファイルは省きます。
+:::
 
 # 説明
+
+:::message
+Macの環境を説明対象とします
+:::
+
+## 前提知識
+
+>The Docker client talks to the Docker daemon, which does the heavy lifting of building, running, and distributing your Docker containers.
+
+Docker には、 Docker Client と Docker Host が存在しており、Docker Client は基本的に Docker Daemon とやり取りをします。
+ 
+
+![Docker architecture](https://docs.docker.com/guides/images/docker-architecture.webp)
+>引用：[公式サイト](https://docs.docker.com/guides/docker-overview/)
+
+
+また、MaxOSではLinuxVMが起動しており、その上でDocker Daemonが起動しています（WindowsOSも同じ感じ）。
+
+![Docker Engine Mac](https://docs.docker.jp/v1.11/_images/mac_docker_host.png)
+
+>引用：[Docker ドキュメント日本語化プロジェクト](https://docs.docker.jp/v1.11/engine/installation/mac.html)
+
+![Docker Engine Windows](https://docs.docker.jp/v1.11/_images/win_docker_host.png)
+
+>引用：[Docker ドキュメント日本語化プロジェクト](https://docs.docker.jp/v1.11/engine/installation/windows.html)
+
+:::message
+環境によって異なる場合があります
+:::
 
 ## そもそもdocker buildとは
 
@@ -109,15 +139,11 @@ flowchart LR
     style Docker_Build_Process fill:#ffcc66,stroke:#cc6600
 ```
 
->This example specifies that the PATH is ., and so tars all the files in the local directory and sends them to the Docker daemon.
-https://docs.docker.com/reference/cli/docker/image/build/#build-with-path
-
->
-> 
+>The Docker client and daemon communicate using a REST API, over UNIX sockets or a network interface.
 
 次に、Docker Daemon へアーカイブファイルを送信します。
 
-Docker Daemon へは UNIXドメインソケット や TCP通信 を通して渡されます。
+Docker Daemon へは UNIXドメインソケット や TCP通信 などを通して渡されます。
 
 ```mermaid
 flowchart LR
@@ -136,25 +162,9 @@ flowchart LR
 
 その後、Docker Daemon で Dockerfile と アーカイブファイルから Docker image が作成されます。
 
-（ちなみに、Mac + RancherDesktop のデフォルト設定だと Docker image は LinuxVM の `/var/lib/docker/以下` に作られます）
-
-```mermaid
-flowchart LR
-    docker_image{{docker_image}}
-    subgraph MacPC
-        subgraph Linux_VM
-            subgraph Docker_Daemon
-            end
-            subgraph /var/lib/docker/
-                docker_image
-            end
-        end
-    end
-    style Linux_VM fill:#99ff99,stroke:#003366
-    style Docker_Daemon fill:#66ccff,stroke:#006600
-%%    style Docker_Build_Process fill:#ffcc66,stroke:#cc6600
-```
-
+:::message
+実際の処理は containerd で動くらしいです
+:::
 
 ## .dockerignore
 
@@ -189,7 +199,7 @@ ignored.ts
 flowchart LR 
 context("index.ts<br>ignored.ts<br>src/<br>Dockerfile<br>package.json<br>package-lock.json")
 subgraph アーカイブファイル
-achived("index.ts<br>src/<br>Dockerfile<br>package.json<br>package-lock.json")
+    achived("index.ts<br>src/<br>Dockerfile<br>package.json<br>package-lock.json")
 end
 context --ignored.tsを除く--> アーカイブファイル
 ```
