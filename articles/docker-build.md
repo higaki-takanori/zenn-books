@@ -9,13 +9,13 @@ publication_name: "levtech"
 
 # 背景
 
-みなさんも「dockerのbuild contextについて説明してクレメンス」と突然聞かれれることありますよね
+みなさんも「dockerのbuild contextについて説明してクレメンス」と突然聞かれることありますよね。
 
 みなさんなら説明できると思うのですが、
 
 僕は、もう疲れちゃって 全然わからなくてェ...
 
-調べてみたのでまとめておきます
+調べてみたのでまとめておきます。
 
 色々手助けしてくださったN先輩いつもありがとうございます(๑╹ω╹๑ )
 
@@ -25,12 +25,42 @@ dockerのbuild contextとは、「dockerのbuild時にアクセスできるフ�
 
 そのファイル群の実態は、「[アーカイブファイル](https://wa3.i-3-i.info/word11512.html)やテキストファイル」となっています。
 
-これだけ聞いても、はて？？って感じだと思うので、[公式サイト](https://docs.docker.com/build/building/context
-)を参考に説明追加していきます。
+これだけ聞いても、はて？？って感じだと思うので、[公式サイト](https://docs.docker.com/)を参考に説明追加していきます。
 
-※今回はアーカイブファイルに絞った説明です。テキストファイルはイメージしやすいかと思うので省きます。
+:::message
+今回はアーカイブファイルに絞った説明です。テキストファイルは省きます。
+:::
 
 # 説明
+
+:::message
+Macの環境を説明対象とします
+:::
+
+## 前提知識
+
+>The Docker client talks to the Docker daemon, which does the heavy lifting of building, running, and distributing your Docker containers.
+
+Docker には、 Docker Client と Docker Host が存在しており、Docker Client は基本的に Docker Daemon とやり取りをします。
+ 
+
+![Docker architecture](https://docs.docker.com/guides/images/docker-architecture.webp)
+>引用：[公式サイト](https://docs.docker.com/guides/docker-overview/)
+
+
+また、MaxOSではLinuxVMが起動しており、その上でDocker Daemonが起動しています（WindowsOSも同じ感じ）。
+
+![Docker Engine Mac](https://docs.docker.jp/v1.11/_images/mac_docker_host.png)
+
+>引用：[Docker ドキュメント日本語化プロジェクト](https://docs.docker.jp/v1.11/engine/installation/mac.html)
+
+![Docker Engine Windows](https://docs.docker.jp/v1.11/_images/win_docker_host.png)
+
+>引用：[Docker ドキュメント日本語化プロジェクト](https://docs.docker.jp/v1.11/engine/installation/windows.html)
+
+:::message
+環境によって異なる場合があります
+:::
 
 ## そもそもdocker buildとは
 
@@ -73,79 +103,68 @@ docker build .
 
 ```mermaid
 flowchart LR
-  context("index.ts<br>src/<br>Dockerfile<br>package.json<br>package-lock.json")
+    context(["index.ts<br>src/<br>Dockerfile<br>package.json<br>package-lock.json"])
     subgraph MacPC
         subgraph Linux_VM
-            subgraph Docker_Process
-                build_process[build_process]
+            subgraph Docker_Daemon
             end
         end
-        context
+        subgraph Docker_Build_Process
+            context
+        end
     end
     style Linux_VM fill:#99ff99,stroke:#003366
-    style Docker_Process fill:#66ccff,stroke:#006600
-    style build_process fill:#ffcc66,stroke:#cc6600
+    style Docker_Daemon fill:#66ccff,stroke:#006600
+    style Docker_Build_Process fill:#ffcc66,stroke:#cc6600
 ```
+>This example specifies that the PATH is ., and so tars all the files in the local directory and sends them to the Docker daemon.
+https://docs.docker.com/reference/cli/docker/image/build/#build-with-path
 
-まず、
-`.` で指定したbuild contextを`tar`で`tarball(アーカイブファイル)`にします
+まず、`.` で指定したbuild contextを`tar`で`tarball(アーカイブファイル)`にします。
 
 ```mermaid
 flowchart LR
-  archive(アーカイブファイル)
+  archive([アーカイブファイル])
     subgraph MacPC
         subgraph Linux_VM
-            subgraph Docker_Process
-                build_process[build_process]
+            subgraph Docker_Daemon
             end
         end
-        archive
+        subgraph Docker_Build_Process
+            archive
+        end
     end
     style Linux_VM fill:#99ff99,stroke:#003366
-    style Docker_Process fill:#66ccff,stroke:#006600
-    style build_process fill:#ffcc66,stroke:#cc6600
+    style Docker_Daemon fill:#66ccff,stroke:#006600
+    style Docker_Build_Process fill:#ffcc66,stroke:#cc6600
 ```
 
->A plain-text file or tarball piped to the docker build command through standard input
+>The Docker client and daemon communicate using a REST API, over UNIX sockets or a network interface.
 
-標準入力を通して、build processにアーカイブファイルを渡します。
+次に、Docker Daemon へアーカイブファイルを送信します。
+
+Docker Daemon へは UNIXドメインソケット や TCP通信 などを通して渡されます。
 
 ```mermaid
 flowchart LR
-  archive(アーカイブファイル)
+  archive([アーカイブファイル])
     subgraph MacPC
         subgraph Linux_Kernel
-            subgraph Docker_Process
-                subgraph build_process[build_process]
-                  archive
-                end
+            subgraph Docker_Daemon
+              archive
             end
         end
     end
     style Linux_Kernel fill:#99ff99,stroke:#003366
-    style Docker_Process fill:#66ccff,stroke:#006600
-    style build_process fill:#ffcc66,stroke:#cc6600
+    style Docker_Daemon fill:#66ccff,stroke:#006600
+%%    style Docker_Build_Process fill:#ffcc66,stroke:#cc6600
 ```
 
-そして、アーカイブファイルを展開して、Dockerfileに基づいてimageを作成していきます。
+その後、Docker Daemon で Dockerfile と アーカイブファイルから Docker image が作成されます。
 
-```mermaid
-flowchart LR
-  context("index.ts<br>src/<br>Dockerfile<br>package.json<br>package-lock.json")
-    subgraph MacPC
-        subgraph Linux_VM
-            subgraph Docker_Process
-                subgraph build_process[build_process]
-                  context
-                end
-            end
-        end
-    end
-    style Linux_VM fill:#99ff99,stroke:#003366
-    style Docker_Process fill:#66ccff,stroke:#006600
-    style build_process fill:#ffcc66,stroke:#cc6600
-```
-
+:::message
+実際の処理は containerd で動くらしいです
+:::
 
 ## .dockerignore
 
@@ -157,7 +176,7 @@ flowchart LR
 
 build contextから除去したいファイルを指定できるみたいです。
 
-つまり、`tarball（アーカイブファイル）`にするタイミングで指定したファイルを除去する
+つまり、`tarball（アーカイブファイル）`にするタイミングで指定したファイルを除去しています。
 
 ### 具体例
 
@@ -180,13 +199,13 @@ ignored.ts
 flowchart LR 
 context("index.ts<br>ignored.ts<br>src/<br>Dockerfile<br>package.json<br>package-lock.json")
 subgraph アーカイブファイル
-achived("index.ts<br>src/<br>Dockerfile<br>package.json<br>package-lock.json")
+    achived("index.ts<br>src/<br>Dockerfile<br>package.json<br>package-lock.json")
 end
 context --ignored.tsを除く--> アーカイブファイル
 ```
 
 # まとめ
 
-簡単にですが、docker buildについてまとめてみました
+簡単にですが、docker buildについてまとめてみました。
 
-少しでも学習の助けになれば幸いです
+少しでも学習の助けになれば幸いです。
