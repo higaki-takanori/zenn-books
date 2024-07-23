@@ -48,11 +48,13 @@ Docker には、 Docker Client と Docker Host が存在しており、Docker Cl
 >引用：[公式サイト](https://docs.docker.com/guides/docker-overview/)
 
 
-また、MaxOSではLinuxVMが起動しており、その上でDocker Daemonが起動しています（WindowsOSも同じ感じ）。
+また、MaxOSではLinuxVMが起動しており、その上でDocker Daemonが待機しています。
 
 ![Docker Engine Mac](https://docs.docker.jp/v1.11/_images/mac_docker_host.png)
 
 >引用：[Docker ドキュメント日本語化プロジェクト](https://docs.docker.jp/v1.11/engine/installation/mac.html)
+
+ちなみに、WindowsOSも同じようにLinuxVMが起動しており、その上でDocker Daemonが待機しています。
 
 ![Docker Engine Windows](https://docs.docker.jp/v1.11/_images/win_docker_host.png)
 
@@ -163,7 +165,7 @@ flowchart LR
 その後、Docker Daemon で Dockerfile と アーカイブファイルから Docker image が作成されます。
 
 :::message
-実際の処理は containerd で動くらしいです
+実際の作成処理は containerd が行うらしいです
 :::
 
 ## .dockerignore
@@ -206,6 +208,6 @@ context --ignored.tsを除く--> アーカイブファイル
 
 # まとめ
 
-簡単にですが、docker buildについてまとめてみました。
+簡単にですが、docker buildのcontextについてまとめてみました。
 
 少しでも学習の助けになれば幸いです。
