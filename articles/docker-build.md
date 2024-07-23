@@ -88,7 +88,7 @@ docker build .
 
 ## 動作の説明
 
-`docker build` の挙動について説明します
+`docker build` の挙動について説明します。
 
 ```
 .
