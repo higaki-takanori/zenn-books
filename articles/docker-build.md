@@ -211,3 +211,16 @@ context --ignored.tsを除く--> アーカイブファイル
 簡単にですが、docker buildのcontextについてまとめてみました。
 
 少しでも学習の助けになれば幸いです。
+
+# 参考
+
+[Docker公式サイト](https://docs.docker.com/)
+
+[アーカイブファイル](https://wa3.i-3-i.info/word11512.html)
+
+https://matsuand.github.io/docs.docker.jp.onthefly/engine/reference/commandline/build/#build-with-path
+
+https://tech.plaid.co.jp/improve_docker_build_efficiency
+
+https://scrapbox.io/keroxp/docker_buildを速くするコツ
+
