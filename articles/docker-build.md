@@ -28,37 +28,34 @@ dockerのbuild contextとは、「dockerのbuild時にアクセスできるフ�
 これだけ聞いても、はて？？って感じだと思うので、[公式サイト](https://docs.docker.com/)を参考に説明追加していきます。
 
 :::message
-今回はアーカイブファイルに絞った説明です。テキストファイルは省きます。
+今回の記事では以下を説明対象にします。
+
+contextの種類
+アーカイブファイルに絞り、テキストファイルは省きます
+環境
+Macを対象とします。それ以外の環境は適宜読み替えてください
 :::
 
 # 説明
 
-:::message
-Macの環境を説明対象とします
-:::
+build contextの解説に入る前に、前提として「dockerコマンドがどのように実行されるか」を解説します。
 
 ## 前提知識
 
 >The Docker client talks to the Docker daemon, which does the heavy lifting of building, running, and distributing your Docker containers.
 
-Docker には、 Docker Client と Docker Host が存在しており、Docker Client は基本的に Docker Daemon とやり取りをします。
+Docker には、 Docker Client と Docker Host が存在しており、Docker Client は基本的にDocker Host内の Docker Daemon とやり取りをします。
  
 
 ![Docker architecture](https://docs.docker.com/guides/images/docker-architecture.webp)
 >引用：[公式サイト](https://docs.docker.com/guides/docker-overview/)
 
 
-また、MaxOSではLinuxVMが起動しており、その上でDocker Daemonが待機しています。
+また、MaxOSではLinuxVMが起動しており、その上でDocker Daemonが待機しています。[^1]
 
 ![Docker Engine Mac](https://docs.docker.jp/v1.11/_images/mac_docker_host.png)
 
 >引用：[Docker ドキュメント日本語化プロジェクト](https://docs.docker.jp/v1.11/engine/installation/mac.html)
-
-ちなみに、WindowsOSも同じようにLinuxVMが起動しており、その上でDocker Daemonが待機しています。
-
-![Docker Engine Windows](https://docs.docker.jp/v1.11/_images/win_docker_host.png)
-
->引用：[Docker ドキュメント日本語化プロジェクト](https://docs.docker.jp/v1.11/engine/installation/windows.html)
 
 :::message
 環境によって異なる場合があります
@@ -224,3 +221,6 @@ https://tech.plaid.co.jp/improve_docker_build_efficiency
 
 https://scrapbox.io/keroxp/docker_buildを速くするコツ
 
+# 注釈
+
+[^1]: ちなみに、WindowsOSも同じようにLinuxVMが起動しており、その上でDocker Daemonが待機しています。
