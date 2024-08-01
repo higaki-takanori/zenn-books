@@ -32,6 +32,7 @@ dockerのbuild contextとは、「dockerのbuild時にアクセスできるフ�
 
 contextの種類
 アーカイブファイルに絞り、テキストファイルは省きます
+
 環境
 Macを対象とします。それ以外の環境は適宜読み替えてください
 :::
@@ -221,6 +222,5 @@ https://tech.plaid.co.jp/improve_docker_build_efficiency
 
 https://scrapbox.io/keroxp/docker_buildを速くするコツ
 
-# 注釈
 
 [^1]: ちなみに、WindowsOSも同じようにLinuxVMが起動しており、その上でDocker Daemonが待機しています。
