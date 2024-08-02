@@ -17,8 +17,6 @@ publication_name: "levtech"
 
 調べてみたのでまとめておきます。
 
-色々手助けしてくださったN先輩いつもありがとうございます(๑╹ω╹๑ )
-
 # 結論
 
 dockerのbuild contextとは、「dockerのbuild時にアクセスできるファイル群」です。
