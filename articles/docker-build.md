@@ -3,7 +3,7 @@ title: "docker buildコマンドでなんとなく指定しているcontextを�
 emoji: "📼"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["docker", "dockerbuild"]
-published: false
+published: true
 publication_name: "levtech"
 ---
 
