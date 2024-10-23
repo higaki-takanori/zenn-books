@@ -18,13 +18,6 @@ DISTRIB_CODENAME=noble
 DISTRIB_DESCRIPTION="Ubuntu 24.04.1 LTS"
 ```
 
-# 結論
-
-ハードリンク：？？？
-
-シンボリックリンク：？？？
-
-
 # 説明
 
 ## ハードリンク
@@ -292,87 +285,36 @@ block-beta
     symboliclink--"notExist"-->notExist
 ```
 
-### ハードリンク
-
-この`sample.txt`にハードリンクを貼ってみます。
+シンボリックリンクを削除しても元のファイル等は削除されません。
 
 ```shell
-$ ln sample.txt sampleHardLink
+$ rm sampleSymbolicLink
 ```
-
-ハードリンクができました。
-
 ```shell
-$ ls -li
-total 8
-655373 -rw-rw-r-- 2 ubuntu ubuntu 15 Oct 23 03:09 sample.txt
-655373 -rw-rw-r-- 2 ubuntu ubuntu 15 Oct 23 03:09 sampleHardLink
+ls -li
+total 4
+655373 -rw-rw-r-- 1 ubuntu ubuntu 15 Oct 23 10:41 sample.txt
+655376 lrwxrwxrwx 1 ubuntu ubuntu  8 Oct 23 11:04 sampleDir -> /dev/fd/
+655377 lrwxrwxrwx 1 ubuntu ubuntu  8 Oct 23 11:15 sampleNotExist -> notExist
 ```
-
-ハードリンクの詳細を確認してみます。
-
 ```shell
-$ stat sampleHardLink
-  File: sampleHardLink
-  Size: 15        	Blocks: 8          IO Block: 4096   regular file
-Device: 252,0	Inode: 655373      Links: 2
-Access: (0664/-rw-rw-r--)  Uid: ( 1000/  ubuntu)   Gid: ( 1000/  ubuntu)
-Access: 2024-10-23 03:09:28.365203420 +0000
-Modify: 2024-10-23 03:09:24.870254182 +0000
-Change: 2024-10-23 07:17:12.305746337 +0000
- Birth: 2024-10-23 03:09:24.870254182 +0000
+$ cat sample.txt
+this is sample
 ```
-
 ```mermaid
 block-beta
     columns 2
     name(["名前（sample.txt）"])
     storage[("this is sample")]
-    hardlink(["名前（sampleHardLink）"])
     
-    hardlink --> storage
     name --> storage
 ```
 
-### シンボリックリンク
+# まとめ
 
-それではシンボリックリンクを貼ってみます。
+シンボリックリンクとハードリンクについてまとめてみました。
 
-```shell
-$ ln -s sample.txt sampleSymbolicLink
-```
-
-```shell
-$ ls -li
-total 8
-655373 -rw-rw-r-- 2 ubuntu ubuntu 15 Oct 23 03:09 sample.txt
-655375 lrwxrwxrwx 1 ubuntu ubuntu 10 Oct 23 07:18 sampleSymbolicLink -> sample.txt
-```
-
-```shell
-stat sampleSymbolicLink
-  File: sampleSymbolicLink -> sample.txt
-  Size: 10        	Blocks: 0          IO Block: 4096   symbolic link
-Device: 252,0	Inode: 655375      Links: 1
-Access: (0777/lrwxrwxrwx)  Uid: ( 1000/  ubuntu)   Gid: ( 1000/  ubuntu)
-Access: 2024-10-23 07:18:31.676713531 +0000
-Modify: 2024-10-23 07:18:21.034717005 +0000
-Change: 2024-10-23 07:18:21.034717005 +0000
- Birth: 2024-10-23 07:18:21.034717005 +0000
-```
-
-```mermaid
-block-beta
-    columns 2
-    name(["名前（sample.txt）"])
-    storage[("this is sample")]
-    symboliclink(["名前（sampleSymbolicLink）"])
-    hardlink(["名前（sampleHardLink）"])
-
-    symboliclink --> name
-    hardlink --> storage
-    name --> storage
-```
+少しでも学びになってもらえれば嬉しいです。
 
 # 参考
 
@@ -380,3 +322,4 @@ block-beta
 
 [シンボリック・リンク](https://www.ibm.com/docs/ja/i/7.5?topic=link-symbolic)
 
+[ふつうのLinuxプログラミング 第2版 第10章](https://i.loveruby.net/stdlinux2/)
