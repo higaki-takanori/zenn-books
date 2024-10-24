@@ -4,6 +4,7 @@ emoji: "🏷️"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["hard-link", "symbolic-link", "linux"]
 published: false
+publication_name: "levtech"
 ---
 
 # 前提
