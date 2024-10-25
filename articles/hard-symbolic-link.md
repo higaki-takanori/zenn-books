@@ -262,6 +262,29 @@ block-beta
     name --> storage
 ```
 
+シンボリックリンクを削除しても元のファイル等は削除されません。
+
+```shell
+$ rm sampleSymbolicLink
+```
+```shell
+ls -li
+total 4
+655373 -rw-rw-r-- 1 ubuntu ubuntu 15 Oct 23 10:41 sample.txt
+```
+```shell
+$ cat sample.txt
+this is sample
+```
+```mermaid
+block-beta
+    columns 2
+    name(["名前（sample.txt）"])
+    storage[("this is sample")]
+    
+    name --> storage
+```
+
 シンボリックリンクはディレクトリにも貼ることができます。
 
 ```shell
@@ -272,7 +295,6 @@ ls -li
 total 4
 655373 -rw-rw-r-- 1 ubuntu ubuntu 15 Oct 23 10:41 sample.txt
 655376 lrwxrwxrwx 1 ubuntu ubuntu  8 Oct 23 11:04 sampleDir -> /dev/fd/
-655375 lrwxrwxrwx 1 ubuntu ubuntu 10 Oct 23 10:50 sampleSymbolicLink -> sample.txt
 ```
 ```shell
 $ ls -li sampleDir/
@@ -306,7 +328,6 @@ total 4
 655373 -rw-rw-r-- 1 ubuntu ubuntu 15 Oct 23 10:41 sample.txt
 655376 lrwxrwxrwx 1 ubuntu ubuntu  8 Oct 23 11:04 sampleDir -> /dev/fd/
 655377 lrwxrwxrwx 1 ubuntu ubuntu  8 Oct 23 11:15 sampleNotExist -> notExist
-655375 lrwxrwxrwx 1 ubuntu ubuntu 10 Oct 23 10:50 sampleSymbolicLink -> sample.txt
 ```
 ```shell
 $ cat sampleNotExist
@@ -331,31 +352,6 @@ block-beta
     symboliclink(["名前（sampleNotExist）"])
     
     symboliclink--"notExist"-->notExist
-```
-
-シンボリックリンクを削除しても元のファイル等は削除されません。
-
-```shell
-$ rm sampleSymbolicLink
-```
-```shell
-ls -li
-total 4
-655373 -rw-rw-r-- 1 ubuntu ubuntu 15 Oct 23 10:41 sample.txt
-655376 lrwxrwxrwx 1 ubuntu ubuntu  8 Oct 23 11:04 sampleDir -> /dev/fd/
-655377 lrwxrwxrwx 1 ubuntu ubuntu  8 Oct 23 11:15 sampleNotExist -> notExist
-```
-```shell
-$ cat sample.txt
-this is sample
-```
-```mermaid
-block-beta
-    columns 2
-    name(["名前（sample.txt）"])
-    storage[("this is sample")]
-    
-    name --> storage
 ```
 
 # まとめ
