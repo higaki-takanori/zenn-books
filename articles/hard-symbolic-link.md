@@ -23,12 +23,6 @@ DISTRIB_DESCRIPTION="Ubuntu 24.04.1 LTS"
 
 ## ハードリンク
 
-> ハード・リンクは、単にリンクと呼ばれることもあり、 実際のオブジェクトにリンクしていなければなりません。
-> 
-> (ファイルをディレクトリーにコピーするなどの方法で) ディレクトリー内にオブジェクトが作成されると、 ディレクトリーとオブジェクトの間に最初のハード・リンクが設定されます。
-
-[ハードリンク](https://www.ibm.com/docs/ja/i/7.5?topic=link-hard)
-
 ハードリンクとは、「ファイル名と保存されているデータを紐づけるもの」です。
 
 つまり、「保存されたデータに名前を付けるもの」です。
@@ -38,6 +32,12 @@ DISTRIB_DESCRIPTION="Ubuntu 24.04.1 LTS"
 > Every file on the Linux filesystem starts with a single hard link. The link is between the filename and the actual data stored on the filesystem.
 >
 > 引用：[Red Hatブログ](https://www.redhat.com/ja/blog/linking-linux-explained)
+
+> ハード・リンクは、単にリンクと呼ばれることもあり、 実際のオブジェクトにリンクしていなければなりません。
+> 
+> (ファイルをディレクトリーにコピーするなどの方法で) ディレクトリー内にオブジェクトが作成されると、 ディレクトリーとオブジェクトの間に最初のハード・リンクが設定されます。
+> 
+> 引用：[IBM：ハードリンク](https://www.ibm.com/docs/ja/i/7.5?topic=link-hard)
 
 ### 実演
 
@@ -180,6 +180,10 @@ total 0
 > They can also span multiple filesystems.
 >
 > 引用：[Red Hatブログ](https://www.redhat.com/ja/blog/linking-linux-explained)
+
+> シンボリック・リンクは、ファイルに含まれるパス名であり、ソフト・リンクとも呼ばれます。
+> 
+> 引用：[IBM：シンボリックリンク](https://www.ibm.com/docs/ja/i/7.5?topic=link-symbolic)
 
 ## 実演
 
