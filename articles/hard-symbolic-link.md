@@ -55,6 +55,17 @@ total 4
 $ cat sample.txt
 this is sample
 ```
+```shell
+$ stat sample.txt
+  File: sample.txt
+  Size: 15        	Blocks: 8          IO Block: 4096   regular file
+Device: 252,0	Inode: 655373      Links: 1
+Access: (0664/-rw-rw-r--)  Uid: ( 1000/  ubuntu)   Gid: ( 1000/  ubuntu)
+Access: 2024-10-23 10:51:14.361429275 +0000
+Modify: 2024-10-23 10:41:50.210205054 +0000
+Change: 2024-10-23 10:41:50.210205054 +0000
+ Birth: 2024-10-23 10:41:50.210205054 +0000
+```
 
 このコマンドの裏でLinuxのファイルシステムが、ストレージに保存された `this is sample` というデータに`sample.txt`という名前を付けるハードリンクを作成しています。
 
@@ -82,8 +93,24 @@ total 8
 $ cat sampleHardLink
 this is sample
 ```
+```shell
+stat sampleHardLink
+  File: sampleHardLink
+  Size: 15        	Blocks: 8          IO Block: 4096   regular file
+Device: 252,0	Inode: 655373      Links: 2
+Access: (0664/-rw-rw-r--)  Uid: ( 1000/  ubuntu)   Gid: ( 1000/  ubuntu)
+Access: 2024-10-23 10:51:14.361429275 +0000
+Modify: 2024-10-23 10:41:50.210205054 +0000
+Change: 2024-10-24 05:57:54.821199900 +0000
+ Birth: 2024-10-23 10:41:50.210205054 +0000
+```
 
 これにより、 `this is sample` のデータに `sampleHardLink` という名前を付けるハードリンクが作成されました。
+
+`ls`コマンド出力の[inode](https://www.redhat.com/en/blog/inodes-linux-filesystem)番号（`-rw-rw-r--`の前の数字）も同じ`655373`を指し示しています。
+
+さらに、`ls`コマンド出力のLinks（`-rw-rw-r--`の後の数字）も`1` -> `2`に増えています。 （`stat`コマンド出力のLinksでも確認可）
+
 
 ```mermaid
 block-beta
@@ -111,6 +138,8 @@ total 4
 
 `sample.txt` の名前だけが消えて、`sampleHardLink` の名前だけが残る形となりました。
 
+`ls`コマンド出力のLinks（`-rw-rw-r--`の後の数字）も`2` -> `1`に減っています。
+
 ```mermaid
 block-beta
     columns 2
@@ -121,7 +150,7 @@ block-beta
 ```
 
 余談ですが、データは自身へのハードリンクが全て削除された時に、ドライブから削除されます。
-つまり、自分に付けられた名前がすべてなくなった時にデータが削除されます。
+つまり、自分に付けられた名前（Links）がすべてなくなった時にデータが削除されます。
 
 ```shell
 $ rm sampleHardLink
@@ -170,6 +199,17 @@ total 4
 $ cat sample.txt
 this is sample
 ```
+```shell
+stat sample.txt
+  File: sample.txt
+  Size: 15        	Blocks: 8          IO Block: 4096   regular file
+Device: 252,0	Inode: 655373      Links: 1
+Access: (0664/-rw-rw-r--)  Uid: ( 1000/  ubuntu)   Gid: ( 1000/  ubuntu)
+Access: 2024-10-23 10:51:14.361429275 +0000
+Modify: 2024-10-23 10:41:50.210205054 +0000
+Change: 2024-10-23 10:41:50.210205054 +0000
+ Birth: 2024-10-23 10:41:50.210205054 +0000
+```
 ```mermaid
 block-beta
     columns 2
@@ -195,9 +235,6 @@ total 4
 $ cat sampleSymbolicLink
 this is sample
 ```
-
-ここで `sampleSymbolicLink` の詳細について見てみます。
-
 ```shell
 $ stat sampleSymbolicLink
   File: sampleSymbolicLink -> sample.txt
@@ -211,6 +248,8 @@ Change: 2024-10-23 10:50:26.815458100 +0000
 ```
 
 シンボリックリンクのリンク先が `sample.txt` であることがわかります。
+
+`ls`コマンドの出力からLinksは`1`のまま変わらず、inode番号も`655373`と`655375`で異なります。
 
 ```mermaid
 block-beta
@@ -272,6 +311,17 @@ total 4
 ```shell
 $ cat sampleNotExist
 cat: sampleNotExist: No such file or directory
+```
+```shell
+stat sampleNotExist
+  File: sampleNotExist -> notExist
+  Size: 8         	Blocks: 0          IO Block: 4096   symbolic link
+Device: 252,0	Inode: 655377      Links: 1
+Access: (0777/lrwxrwxrwx)  Uid: ( 1000/  ubuntu)   Gid: ( 1000/  ubuntu)
+Access: 2024-10-25 04:29:56.213534050 +0000
+Modify: 2024-10-23 11:15:32.574498481 +0000
+Change: 2024-10-23 11:15:32.574498481 +0000
+ Birth: 2024-10-23 11:15:32.574498481 +0000
 ```
 ```mermaid
 block-beta
