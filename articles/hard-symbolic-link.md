@@ -33,7 +33,7 @@ DISTRIB_DESCRIPTION="Ubuntu 24.04.1 LTS"
 
 つまり、「保存されたデータに名前を付けるもの」です。
 
-また、ハードリンクは同一のファイルシステムの保存されたデータに紐づける必要があります。
+また、ハードリンクは同一ファイルシステムの保存されたデータに紐づける必要があります。
 
 > Every file on the Linux filesystem starts with a single hard link. The link is between the filename and the actual data stored on the filesystem.
 >
@@ -120,9 +120,7 @@ block-beta
     hardlink --> storage
 ```
 
-
 余談ですが、データは自身へのハードリンクが全て削除された時に、ドライブから削除されます。
-
 つまり、自分に付けられた名前がすべてなくなった時にデータが削除されます。
 
 ```shell
@@ -142,7 +140,6 @@ total 0
 シンボリックリンクとは、直訳すると「抽象的なリンク」です。
 
 抽象的なリンクなので、保存されたデータでなくても名前を付けることができます。
-
 ディレクトリやファイルディスクリプタなどの特殊ファイルにも名前を付けることができます。
 
 誤解を恐れずに言うと「名前に付ける名前」みたいなものです。
