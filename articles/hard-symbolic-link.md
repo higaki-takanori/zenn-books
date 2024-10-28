@@ -94,7 +94,7 @@ $ cat sampleHardLink
 this is sample
 ```
 ```shell
-stat sampleHardLink
+$ stat sampleHardLink
   File: sampleHardLink
   Size: 15        	Blocks: 8          IO Block: 4096   regular file
 Device: 252,0	Inode: 655373      Links: 2
@@ -204,7 +204,7 @@ $ cat sample.txt
 this is sample
 ```
 ```shell
-stat sample.txt
+$ stat sample.txt
   File: sample.txt
   Size: 15        	Blocks: 8          IO Block: 4096   regular file
 Device: 252,0	Inode: 655373      Links: 1
@@ -338,7 +338,7 @@ $ cat sampleNotExist
 cat: sampleNotExist: No such file or directory
 ```
 ```shell
-stat sampleNotExist
+$ stat sampleNotExist
   File: sampleNotExist -> notExist
   Size: 8         	Blocks: 0          IO Block: 4096   symbolic link
 Device: 252,0	Inode: 655377      Links: 1
