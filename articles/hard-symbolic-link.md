@@ -3,7 +3,7 @@ title: "ハードリンクとシンボリックリンクを説明できるよう
 emoji: "🏷️"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["hard-link", "symbolic-link", "linux"]
-published: false
+published: true
 publication_name: "levtech"
 ---
 
