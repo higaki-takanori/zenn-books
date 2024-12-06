@@ -9,9 +9,7 @@ publication_name: "levtech"
 
 # はじめに
 
-家のネットワークを見てぇな
-
-俺は誰と通信してんだが知りたくなった
+FIXME 家のネットワークを見てぇな , 俺は誰と通信してんだが知りたくなった
 
 # 対象読者
 
@@ -35,7 +33,7 @@ Proxmox VEについては説明しません。
 
 # どんな感じ？
 
-[//]: # (FIXME 画像とか貼り付ける)
+FIXME 画像とか貼り付ける
 
 こんな感じで誰と通信してるのか認識できて面白い！！！
 
@@ -54,6 +52,8 @@ Proxmox VEについては説明しません。
 - V6プラス(IPoE方式)
 
 # 導入
+
+FIXME 最終的なネットワーク構成図を貼り付ける
 
 ## RTX1210
 
@@ -102,6 +102,8 @@ dashboard accumulate traffic on
 
 初期状態だとIPv4 over IPv6のトンネリングの設定ができないのでFWをアップデートする必要があります。
 
+※IPoE方式だと設定しないとIPv4の通信ができないのでIPv4 over IPv6の設定が必要です。
+
 !!!!注意!!!!!
 
 [公式サイト](https://network.yamaha.com/support/rtx1210_boot/)にあるように、特定の製造番号のRTX1210は対策しないとFWアップデート後に起動しなくなる可能性があるので注意してください
@@ -113,14 +115,46 @@ FWのアップデート方法は[こちらのPDF](https://www.rtpro.yamaha.co.jp
 **RTX1210の設定変更**
 
 デフォルトデートウェイ
+```shell
+```
 
 NAT
+```shell
+```
 
 DNS
+```shell
+```
 
 DHCP
+```shell
+```
+
+
+**RTX1210とWANの接続**
+
+LAN2にWANとのLANケーブルを接続する。
+
+FIXME
+
+**家のネットの無線化**
+
+RTX1210と無線ルータを接続する。
+
+FIXME
+
+FIXME 無線ルータのDHCPの設定を切るのを忘れずになど記載する
 
 ## ntopng
+
+[ぐえたんの書庫 ntopngをセットアップして自宅のネットワークトラフィックを監視する (proxmoxのVM)](https://guetan.dev/setup-ntopng/#rtx1200%E3%81%A7port-mirroring%E3%81%AE%E8%A8%AD%E5%AE%9A)
+の内容を参考にする
+
+FIXME 画像とか載せる
+
+# まとめ
+
+
 
 # 参考
 
