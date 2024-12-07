@@ -21,6 +21,8 @@ FIXME 家のネットワークを見てぇな , 俺は誰と通信してんだ�
 
 FIXME 画像とか貼り付ける
 
+![](ntopng-demo.png)
+
 こんな感じで誰と通信してるのか認識できて面白い！！！
 
 自分はこんな通信してたんだを知ることができてテンション上がりました！！
@@ -48,7 +50,7 @@ FIXME 画像とか貼り付ける
 - ポートミラーリングができるルータ: RTX1210
   - 工場出荷状態でした。
   - 筆者はヤフオクで購入しました。
-- 無線LANルータ: FIXME
+- 無線LANルータ: I-O DATA WN-DX1200GR
 - ルータ設定用PC: Macbook Pro
 - 通信確認用PC: MINISFORUM Venus Series UM790Pro（Proxmox VEをインストール）
 
@@ -58,7 +60,7 @@ FIXME 画像とか貼り付ける
 
 **最終的なネットワーク構成**
 
-FIXME 最終的なネットワーク構成図を貼り付ける
+![](homenetwork-ntopng.png)
 
 ## 注意事項
 
@@ -345,15 +347,38 @@ RTX1210のLAN1のポート1~7の任意のポートと無線LANルータを接続
 ## ntopngの導入
 
 [ぐえたんの書庫 ntopngをセットアップして自宅のネットワークトラフィックを監視する (proxmoxのVM)](https://guetan.dev/setup-ntopng/#rtx1200%E3%81%A7port-mirroring%E3%81%AE%E8%A8%AD%E5%AE%9A)
-の内容を参考にする
+の内容の通りに実行していく
 
-FIXME 画像とか載せる
+```Shell
+(Proxmox VE) $ sudo apt install openvswitch-switch openvswitch-common
+```
+
+```Shell
+(Proxmox VE) $ ovs-vsctl -- --id=@p get port tap101i1     -- --id=@m create mirror name=span1 select-all=true output-port=@p     -- set bridge vmbr1 mirrors=@m
+```
+
+```Shell
+(Proxmox VE内のVM) $ sudo apt-get install software-properties-common wget
+(Proxmox VE内のVM) $ sudo add-apt-repository universe
+(Proxmox VE内のVM) $ wget https://packages.ntop.org/apt-stable/22.04/all/apt-ntop-stable.deb
+(Proxmox VE内のVM) $ sudo chown _apt /var/lib/update-notifier/package-data-downloads/partial/
+(Proxmox VE内のVM) $ sudo apt install ./apt-ntop-stable.deb
+(Proxmox VE内のVM) $ sudo apt-get clean all
+(Proxmox VE内のVM) $ sudo apt-get update
+(Proxmox VE内のVM) $ sudo apt-get install pfring-dkms nprobe ntopng n2disk cento
+(Proxmox VE内のVM) $ sudo apt-get update
+(Proxmox VE内のVM) $ sudo apt-get upgrade 
+```
 
 ## 通信の確認
 
 これで通信を確認できます。
 
+FIXME 画像載せる
 
 ## 参考
 
+[ヤマハネットワーク製品公式](https://network.yamaha.com/products/routers/rtx1210/spec#tab)
+
 [ぐえたんの書庫 ntopngをセットアップして自宅のネットワークトラフィックを監視する (proxmoxのVM)](https://guetan.dev/setup-ntopng/#rtx1200%E3%81%A7port-mirroring%E3%81%AE%E8%A8%AD%E5%AE%9A)
+
