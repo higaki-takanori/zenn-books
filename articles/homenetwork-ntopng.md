@@ -13,27 +13,9 @@ FIXME 家のネットワークを見てぇな , 俺は誰と通信してんだ�
 
 ## 対象読者
 
-- PC以外の通信を知りたい人
+- ネットワーク興味がある方
 - スマホやAmazon Echoなどの機器の通信まで見たい人
   - （実際の通信の内容は暗号化されていて見えません）
-
-## 準備するもの
-
-- ポートミラーリングができるルータ
-  - 筆者は 「YAMAHA ルータ RTX1210」 を購入しました。
-- Proxmox VEがインストールされているPC
-- Proxmox VEがインストールされているPCにNICが2つない場合はNIC
-  - 筆者は miniPCだったので[UBSタイプのNIC](https://amzn.asia/d/cdHggA8)を購入しました。
-
-![](https://network.yamaha.com/var/site/storage/images/_aliases/size_large/1/8/8/8/18881-17-jpn-JP/rtx1210_main.jpg =250x)
-
-[引用：ヤマハネットワーク製品公式](https://network.yamaha.com/products/routers/rtx1210/spec#tab)
-
-## 注意事項
-
-Proxmox VEについては説明しません。
-
-詳しく知りたい方は[公式サイト](https://www.proxmox.com/en/)やこちらの[本](https://techbookfest.org/product/8HATSEF31zuZAkeTAFe1m6?productVariantID=xpgxNEK7Tc4kdFdBDwBBCu)がおすすめです。
 
 ## どんな感じ？
 
@@ -43,27 +25,52 @@ FIXME 画像とか貼り付ける
 
 自分はこんな通信してたんだを知ることができてテンション上がりました！！
 
+## 準備するもの
+
+- ポートミラーリングができるルータ
+- 無線LANルータ
+- ルータ設定用のPC
+- 通信確認用PC
+  - ルータ設定用のPCと同じでも大丈夫です。
+- (任意)通信確認用PCにNICが2つない場合はNIC
+  - 筆者はminiPCだったので[UBSタイプのNIC](https://amzn.asia/d/cdHggA8)を購入しました。
+
+![](https://network.yamaha.com/var/site/storage/images/_aliases/size_large/1/8/8/8/18881-17-jpn-JP/rtx1210_main.jpg =250x)
+
+[引用：ヤマハネットワーク製品公式](https://network.yamaha.com/products/routers/rtx1210/spec#tab)
+
 ## 環境
 
-使用した機器類
+**使用した機器類**
 
-- PC1: Macbook Pro
-- PC2: Proxmox VEがインストールされているPC
-- ルータ: RTX1210
+以下の固有名詞で説明します。
 
-筆者のプロバイダ契約
+- ポートミラーリングができるルータ: RTX1210
+  - 工場出荷状態でした。
+  - 筆者はヤフオクで購入しました。
+- 無線LANルータ: FIXME
+- ルータ設定用PC: Macbook Pro
+- 通信確認用PC: MINISFORUM Venus Series UM790Pro（Proxmox VEをインストール）
+
+**筆者のプロバイダ契約**
 
 - V6プラス(IPoE方式)
 
+**最終的なネットワーク構成**
+
 FIXME 最終的なネットワーク構成図を貼り付ける
+
+## 注意事項
+
+Proxmox VEについては説明しません。
+
+詳しく知りたい方は[公式サイト](https://www.proxmox.com/en/)やこちらの[本](https://techbookfest.org/product/8HATSEF31zuZAkeTAFe1m6?productVariantID=xpgxNEK7Tc4kdFdBDwBBCu)がおすすめです。
 
 ## RTX1210の導入
 
-まずはRTX1210の設定を変えていきます。
-
 ### RTX1210にアクセス
 
-まずは、MacPCとRTX1210のLAN1の任意のポートをLANケーブルで接続します。
+まずは、MacとRTX1210のLAN1の任意のポートをLANケーブルで接続します。
 
 次に、MacのターミナルでRTX1210に接続します。
 
@@ -102,7 +109,7 @@ dashboard accumulate traffic on
 
 ### RTX1210のFWアップデート
 
-初期状態だとIPv4 over IPv6のトンネリングの設定ができないのでFWをアップデートする必要があります。
+工場出荷状態のFWだとIPv4 over IPv6のトンネリングの設定ができないのでFWをアップデートする必要があります。
 
 ※ IPoE方式だとルータの設定なしではIPv4の通信ができないのでIPv4 over IPv6の設定が必要です。
 
@@ -132,7 +139,7 @@ Password: <パスワードを入力する（初期状態の場合は何も入力
 - 「VLANなし」の設定を記載します。
 - インターネットプロバイダとの契約は「V6プラス」です。
 
-#### IPv6
+#### IPv6の設定
 
 **LAN2のDHCPクライアントの設定**
 ```Shell
@@ -149,7 +156,7 @@ ipv6 lan1 rtadv send 1 o_flag=on
 
 LAN1内の機器に対してルータがRA(Router Advertisement)メッセージを送信するようになります。
 
-RAメッセージで配布するプレフィックスにLAN2で取得した「グローバルIPv6プレフィックス」とします。
+RAメッセージで配布するプレフィックスがLAN2で取得した「グローバルIPv6プレフィックス」になります。
 
 
 **LAN1のDHCPv6サーバの設定**
@@ -159,7 +166,7 @@ ipv6 lan1 dhcp service server
 
 LAN1内にDHCPv6サーバを構築します。
 
-※ SLAAC + RDNSS option の設定にしたい方は、こちらの設定は不要です。
+※ FIXME (本記事のDHCPv6はDNSサーバの設定のために使用しています)SLAAC + RDNSS option の設定にしたい方は、こちらの設定は不要です。
 
 **LAN1のプレフィックスの設定**
 
@@ -188,7 +195,7 @@ ipv6 filter dynamic 200098 * * tcp
 ipv6 filter dynamic 200099 * * udp
 ```
 
-#### IPv4
+#### IPv4の設定
 
 IPv4 over IPv6トンネル
 ```Shell
@@ -202,7 +209,7 @@ tunnel select 1
  tunnel enable 1
 ```
 
-IPv6通信
+FIXME
 
 **セキュリティ**
 
@@ -250,7 +257,7 @@ ip route default gateway tunnel 1
 lan port-mirroring lan1 8 in 1 2 3 4 5 6 7 out 1 2 3 4 5 6 7
 ```
 
-LAN1のポート1~7の受信・送信された通信データをポート8にコピーされます。
+LAN1のポート1~7の受信・送信された通信データがポート8にコピーされます。
 
 :::details 全体設定
 
@@ -321,19 +328,18 @@ RTX1210のLAN2にインターネットとのLANケーブルを接続します。
 
 ※ LAN1のポート2ではないことに注意が必要です。
 
-
-### 家のネットの無線化
+### 家のネットワークの無線対応
 
 今のままではRTX1210と繋がっている機器しかインターネットと通信できないです。
 
 無線LANルータとRTX1210を接続することでAmazon EchoなどのWi-fi対応機器をインターネットと通信できるようにします。
 
-RTX1210のLAN1のポート1~7の好きな場所と無線LANルータを接続します。
+RTX1210のLAN1のポート1~7の任意のポートと無線LANルータを接続します。
 
 :::message
-無線でインターネットと通信できない時は、割り振られているIPアドレスが正しいか確認してください
+無線でインターネットと通信できない時は、割り振られているIPアドレスが正しいか確認してください。
 
-無線LANルータのDHCPで割り当てられていたIPアドレスになっていないかなど
+無線LANルータのDHCPで割り当てたIPアドレスになってしまっているなど
 :::
 
 ## ntopngの導入
@@ -343,8 +349,9 @@ RTX1210のLAN1のポート1~7の好きな場所と無線LANルータを接続し
 
 FIXME 画像とか載せる
 
-## まとめ
+## 通信の確認
 
+これで通信を確認できます。
 
 
 ## 参考
