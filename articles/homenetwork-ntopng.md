@@ -21,7 +21,7 @@ FIXME 家のネットワークを見てぇな , 俺は誰と通信してんだ�
 
 FIXME 画像とか貼り付ける
 
-![](../images/homenetwork-ntopng/demo.png)
+![](/images/homenetwork-ntopng/demo.png)
 
 こんな感じで誰と通信してるのか認識できて面白い！！！
 
@@ -60,7 +60,7 @@ FIXME 画像とか貼り付ける
 
 **最終的なネットワーク構成**
 
-![](../images/homenetwork-ntopng/homenetwork.png)
+![](/images/homenetwork-ntopng/homenetwork.png)
 
 ## 注意事項
 
