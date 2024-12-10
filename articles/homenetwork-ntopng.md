@@ -2,7 +2,7 @@
 title: "家のネットワーク見てみた"
 emoji: ""
 type: "tech" # tech: 技術記事 / idea: アイデア
-topics: ["network", "yamaha-router", "ntopng"]
+topics: ["network", "yamaha-router"]
 published: false
 publication_name: "levtech"
 ---
