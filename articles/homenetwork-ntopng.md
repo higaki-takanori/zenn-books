@@ -34,12 +34,8 @@ FIXME 画像とか貼り付ける
 - ルータ設定用のPC
 - 通信確認用PC
   - ルータ設定用のPCと同じでも大丈夫です。
-- (任意)通信確認用PCにNICが2つない場合はNIC
+- (任意)通信確認用PCにLANポートがない場合はLANポート付きのNIC
   - 筆者はminiPCだったので[UBSタイプのNIC](https://amzn.asia/d/cdHggA8)を購入しました。
-
-![](https://network.yamaha.com/var/site/storage/images/_aliases/size_large/1/8/8/8/18881-17-jpn-JP/rtx1210_main.jpg =250x)
-
-[引用：ヤマハネットワーク製品公式](https://network.yamaha.com/products/routers/rtx1210/spec#tab)
 
 ## 環境
 
@@ -53,6 +49,10 @@ FIXME 画像とか貼り付ける
 - 無線LANルータ: I-O DATA WN-DX1200GR
 - ルータ設定用PC: Macbook Pro
 - 通信確認用PC: MINISFORUM Venus Series UM790Pro（Proxmox VEをインストール）
+
+![](https://network.yamaha.com/var/site/storage/images/_aliases/size_large/1/8/8/8/18881-17-jpn-JP/rtx1210_main.jpg =250x)
+
+[引用：ヤマハネットワーク製品公式](https://network.yamaha.com/products/routers/rtx1210/spec#tab)
 
 **筆者のプロバイダ契約**
 
@@ -111,16 +111,17 @@ dashboard accumulate traffic on
 
 ### RTX1210のFWアップデート
 
-工場出荷状態のFWだとIPv4 over IPv6のトンネリングの設定ができないのでFWをアップデートする必要があります。
-
-※ IPoE方式だとルータの設定なしではIPv4の通信ができないのでIPv4 over IPv6の設定が必要です。
-
 :::message alert
 
 [公式サイト](https://network.yamaha.com/support/rtx1210_boot/)にあるように、特定の製造番号のRTX1210は対策しないとFWアップデート後に起動しなくなる可能性があるので注意してください
 >弊社製ギガアクセスVPNルーター「RTX1210」におきまして、ファームウェア更新後に起動しなくなるなどの不具合が発生することが判明いたしました。この不具合は、本記事に掲載する対策を施すことで回避することができます。
 
 :::
+
+工場出荷状態のFWだとIPv4 over IPv6のトンネリングの設定ができないのでFWをアップデートする必要があります。
+
+※ IPoE方式だとルータの設定なしではIPv4の通信ができないのでIPv4 over IPv6の設定が必要です。
+
 
 FWのアップデート方法は[こちらのPDF](https://www.rtpro.yamaha.co.jp/RT/manual/rtx1210/Users.pdf)を参考に行なってください。
 筆者は外部メモリでアップデートしました。
@@ -211,7 +212,7 @@ tunnel select 1
  tunnel enable 1
 ```
 
-FIXME
+IPv4 over IPv6については[こちらのHP](https://www.ntt.com/business/services/network/internet-connect/ocn-business/bocn/knowledge/archive_115.html)を参考にしてください。
 
 **セキュリティ**
 
@@ -344,7 +345,7 @@ RTX1210のLAN1のポート1~7の任意のポートと無線LANルータを接続
 無線LANルータのDHCPで割り当てたIPアドレスになってしまっているなど
 :::
 
-## ntopngの導入
+## ntopngの導入（別記事にしようかな）
 
 [ぐえたんの書庫 ntopngをセットアップして自宅のネットワークトラフィックを監視する (proxmoxのVM)](https://guetan.dev/setup-ntopng/#rtx1200%E3%81%A7port-mirroring%E3%81%AE%E8%A8%AD%E5%AE%9A)
 の内容の通りに実行していく
@@ -372,9 +373,21 @@ RTX1210のLAN1のポート1~7の任意のポートと無線LANルータを接続
 
 ## 通信の確認
 
-これで通信を確認できます。
+**通信確認用PCにWiresharkをインストール**
+
+[Wireshark](https://www.wireshark.org/download.html)
+
+自分はMacにインストールしました。
+
+**通信確認用PCとRTX1210の接続**
+
+Mac(USBタイプのNIC)とRTX1210のLAN1のポート8をLANケーブルで接続します。
+
+**Wiresharkで通信監視**
 
 FIXME 画像載せる
+
+対戦ゲーム中も通信していることが確認できました。
 
 ## 参考
 
