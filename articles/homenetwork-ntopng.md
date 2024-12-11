@@ -1,6 +1,6 @@
 ---
 title: "家のネットワーク見てみた"
-emoji: ""
+emoji: "🔎"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["network", "yamaha-router"]
 published: false
@@ -9,7 +9,8 @@ publication_name: "levtech"
 
 ## はじめに
 
-家のネットワーク通信が見たいなーの気持ちが抑えられなくなったので、どうにかして見れないかを試してみた記事です。
+家のネットワーク通信が見たいなーの気持ちが抑えられなくなりました。
+そこで、どうにかして見れないかを試してみた記事です。
 
 ## 対象読者
 
@@ -350,32 +351,6 @@ RTX1210のLAN1のポート1~7の任意のポートと無線LANルータを接続
 無線LANルータのDHCPで割り当てたIPアドレスになってしまっているなど
 :::
 
-## ntopngの導入（別記事にしようかな）
-
-[ぐえたんの書庫 ntopngをセットアップして自宅のネットワークトラフィックを監視する (proxmoxのVM)](https://guetan.dev/setup-ntopng/#rtx1200%E3%81%A7port-mirroring%E3%81%AE%E8%A8%AD%E5%AE%9A)
-の内容の通りに実行していく
-
-```Shell
-(Proxmox VE) $ sudo apt install openvswitch-switch openvswitch-common
-```
-
-```Shell
-(Proxmox VE) $ ovs-vsctl -- --id=@p get port tap101i1     -- --id=@m create mirror name=span1 select-all=true output-port=@p     -- set bridge vmbr1 mirrors=@m
-```
-
-```Shell
-(Proxmox VE内のVM) $ sudo apt-get install software-properties-common wget
-(Proxmox VE内のVM) $ sudo add-apt-repository universe
-(Proxmox VE内のVM) $ wget https://packages.ntop.org/apt-stable/22.04/all/apt-ntop-stable.deb
-(Proxmox VE内のVM) $ sudo chown _apt /var/lib/update-notifier/package-data-downloads/partial/
-(Proxmox VE内のVM) $ sudo apt install ./apt-ntop-stable.deb
-(Proxmox VE内のVM) $ sudo apt-get clean all
-(Proxmox VE内のVM) $ sudo apt-get update
-(Proxmox VE内のVM) $ sudo apt-get install pfring-dkms nprobe ntopng n2disk cento
-(Proxmox VE内のVM) $ sudo apt-get update
-(Proxmox VE内のVM) $ sudo apt-get upgrade 
-```
-
 ## 通信の確認
 
 **通信確認用PCにWiresharkをインストール**
@@ -398,9 +373,9 @@ USB NIC接続前
 USB NIC接続後
 ![](/images/homenetwork-ntopng/wireshark-usb.png)
 
-
-![](/images/homenetwork-ntopng/switch-net.jpg)
+Wireshark
 ![](/images/homenetwork-ntopng/wireshark-switch.png)
+![](/images/homenetwork-ntopng/switch-net.jpg)
 
 ゲーム機など家のネットワーク通信が確認できました。
 
