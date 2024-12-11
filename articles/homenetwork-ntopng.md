@@ -175,8 +175,6 @@ ipv6 lan1 dhcp service server
 
 LAN1内にDHCPv6サーバを構築します。
 
-※ FIXME (本記事のDHCPv6はDNSサーバの設定のために使用しています)SLAAC + RDNSS option の設定にしたい方は、こちらの設定は不要です。
-
 **LAN1のプレフィックスの設定**
 
 ```Shell
