@@ -1,31 +1,34 @@
 ---
-title: "ネットワーク"
-emoji: ""
+title: "家のネットワーク見てみた"
+emoji: "🔎"
 type: "tech" # tech: 技術記事 / idea: アイデア
-topics: ["network", "yamaha-router", "ntopng"]
+topics: ["network", "yamaha-router"]
 published: false
 publication_name: "levtech"
 ---
 
 ## はじめに
 
-FIXME 家のネットワークを見てぇな , 俺は誰と通信してんだが知りたくなった
+家のネットワーク通信が見たいなーの気持ちが抑えられなくなりました。
+そこで、どうにかして見れないかを試してみた記事です。
 
 ## 対象読者
 
 - ネットワーク興味がある方
-- スマホやAmazon Echoなどの機器の通信まで見たい人
-  - （実際の通信の内容は暗号化されていて見えません）
+- オンライン対応のゲーム機やAmazon Echoなどの機器の通信を見たい人
+  - （実際の通信データは暗号化されていて見えません）
 
 ## どんな感じ？
 
-FIXME 画像とか貼り付ける
+![](/images/homenetwork-ntopng/switch-net.jpg)
+![](/images/homenetwork-ntopng/wireshark-switch.png)
 
-![](/images/homenetwork-ntopng/demo.png)
-
-こんな感じで誰と通信してるのか認識できて面白い！！！
+誰と通信してるのか認識できていい感じです！！！
 
 自分はこんな通信してたんだを知ることができてテンション上がりました！！
+
+馴染みのある通信方法でなんだか安心しました！！！
+
 
 ## 準備するもの
 
@@ -34,12 +37,8 @@ FIXME 画像とか貼り付ける
 - ルータ設定用のPC
 - 通信確認用PC
   - ルータ設定用のPCと同じでも大丈夫です。
-- (任意)通信確認用PCにNICが2つない場合はNIC
-  - 筆者はminiPCだったので[UBSタイプのNIC](https://amzn.asia/d/cdHggA8)を購入しました。
-
-![](https://network.yamaha.com/var/site/storage/images/_aliases/size_large/1/8/8/8/18881-17-jpn-JP/rtx1210_main.jpg =250x)
-
-[引用：ヤマハネットワーク製品公式](https://network.yamaha.com/products/routers/rtx1210/spec#tab)
+- (任意)通信確認用PCにLANポートがない場合はLANポート付きのNIC
+  - 筆者は[UBSタイプのNIC](https://amzn.asia/d/cdHggA8)を購入しました。
 
 ## 環境
 
@@ -52,7 +51,11 @@ FIXME 画像とか貼り付ける
   - 筆者はヤフオクで購入しました。
 - 無線LANルータ: I-O DATA WN-DX1200GR
 - ルータ設定用PC: Macbook Pro
-- 通信確認用PC: MINISFORUM Venus Series UM790Pro（Proxmox VEをインストール）
+- 通信確認用PC: Macbook Pro
+
+![](https://network.yamaha.com/var/site/storage/images/_aliases/size_large/1/8/8/8/18881-17-jpn-JP/rtx1210_main.jpg =250x)
+
+[引用：ヤマハネットワーク製品公式](https://network.yamaha.com/products/routers/rtx1210/spec#tab)
 
 **筆者のプロバイダ契約**
 
@@ -60,13 +63,16 @@ FIXME 画像とか貼り付ける
 
 **最終的なネットワーク構成**
 
-![](/images/homenetwork-ntopng/homenetwork.png)
+![](/images/homenetwork-ntopng/home-network.webp)
 
 ## 注意事項
 
-Proxmox VEについては説明しません。
+:::message alert
 
-詳しく知りたい方は[公式サイト](https://www.proxmox.com/en/)やこちらの[本](https://techbookfest.org/product/8HATSEF31zuZAkeTAFe1m6?productVariantID=xpgxNEK7Tc4kdFdBDwBBCu)がおすすめです。
+通信で得た情報を悪用すると[不正アクセス禁止法](https://www.gmo.jp/security/security-all/information-security/blog/unauthorized-computer-access-law/)に触れる可能性があります！
+使い方には十分ご注意ください。
+
+:::
 
 ## RTX1210の導入
 
@@ -111,16 +117,17 @@ dashboard accumulate traffic on
 
 ### RTX1210のFWアップデート
 
-工場出荷状態のFWだとIPv4 over IPv6のトンネリングの設定ができないのでFWをアップデートする必要があります。
-
-※ IPoE方式だとルータの設定なしではIPv4の通信ができないのでIPv4 over IPv6の設定が必要です。
-
 :::message alert
 
 [公式サイト](https://network.yamaha.com/support/rtx1210_boot/)にあるように、特定の製造番号のRTX1210は対策しないとFWアップデート後に起動しなくなる可能性があるので注意してください
 >弊社製ギガアクセスVPNルーター「RTX1210」におきまして、ファームウェア更新後に起動しなくなるなどの不具合が発生することが判明いたしました。この不具合は、本記事に掲載する対策を施すことで回避することができます。
 
 :::
+
+工場出荷状態のFWだとIPv4 over IPv6のトンネリングの設定ができないのでFWをアップデートする必要があります。
+
+※ IPoE方式だとルータの設定なしではIPv4の通信ができないのでIPv4 over IPv6の設定が必要です。
+
 
 FWのアップデート方法は[こちらのPDF](https://www.rtpro.yamaha.co.jp/RT/manual/rtx1210/Users.pdf)を参考に行なってください。
 筆者は外部メモリでアップデートしました。
@@ -137,7 +144,7 @@ Password: <パスワードを入力する（初期状態の場合は何も入力
 
 #### 前提
 
-- RTX1210の「LAN2」とWANを接続します。
+- RTX1210の「LAN2」とインターネットを接続します。
 - 「VLANなし」の設定を記載します。
 - インターネットプロバイダとの契約は「V6プラス」です。
 
@@ -211,7 +218,7 @@ tunnel select 1
  tunnel enable 1
 ```
 
-FIXME
+IPv4 over IPv6については[こちらのHP](https://www.ntt.com/business/services/network/internet-connect/ocn-business/bocn/knowledge/archive_115.html)を参考にしてください。
 
 **セキュリティ**
 
@@ -344,41 +351,39 @@ RTX1210のLAN1のポート1~7の任意のポートと無線LANルータを接続
 無線LANルータのDHCPで割り当てたIPアドレスになってしまっているなど
 :::
 
-## ntopngの導入
-
-[ぐえたんの書庫 ntopngをセットアップして自宅のネットワークトラフィックを監視する (proxmoxのVM)](https://guetan.dev/setup-ntopng/#rtx1200%E3%81%A7port-mirroring%E3%81%AE%E8%A8%AD%E5%AE%9A)
-の内容の通りに実行していく
-
-```Shell
-(Proxmox VE) $ sudo apt install openvswitch-switch openvswitch-common
-```
-
-```Shell
-(Proxmox VE) $ ovs-vsctl -- --id=@p get port tap101i1     -- --id=@m create mirror name=span1 select-all=true output-port=@p     -- set bridge vmbr1 mirrors=@m
-```
-
-```Shell
-(Proxmox VE内のVM) $ sudo apt-get install software-properties-common wget
-(Proxmox VE内のVM) $ sudo add-apt-repository universe
-(Proxmox VE内のVM) $ wget https://packages.ntop.org/apt-stable/22.04/all/apt-ntop-stable.deb
-(Proxmox VE内のVM) $ sudo chown _apt /var/lib/update-notifier/package-data-downloads/partial/
-(Proxmox VE内のVM) $ sudo apt install ./apt-ntop-stable.deb
-(Proxmox VE内のVM) $ sudo apt-get clean all
-(Proxmox VE内のVM) $ sudo apt-get update
-(Proxmox VE内のVM) $ sudo apt-get install pfring-dkms nprobe ntopng n2disk cento
-(Proxmox VE内のVM) $ sudo apt-get update
-(Proxmox VE内のVM) $ sudo apt-get upgrade 
-```
-
 ## 通信の確認
 
-これで通信を確認できます。
+**通信確認用PCにWiresharkをインストール**
 
-FIXME 画像載せる
+[Wireshark](https://www.wireshark.org/download.html)
 
-## 参考
+自分はMacにインストールしました。
 
-[ヤマハネットワーク製品公式](https://network.yamaha.com/products/routers/rtx1210/spec#tab)
+**通信確認用PCとRTX1210の接続**
 
-[ぐえたんの書庫 ntopngをセットアップして自宅のネットワークトラフィックを監視する (proxmoxのVM)](https://guetan.dev/setup-ntopng/#rtx1200%E3%81%A7port-mirroring%E3%81%AE%E8%A8%AD%E5%AE%9A)
+Mac(USBタイプのNIC)とRTX1210のLAN1のポート8をLANケーブルで接続します。
 
+※ ポートミラーリングしたポートを接続してください。
+
+**Wiresharkで通信監視**
+
+USB NIC接続前
+![](/images/homenetwork-ntopng/wireshark.png)
+
+USB NIC接続後
+![](/images/homenetwork-ntopng/wireshark-usb.png)
+
+Wireshark
+![](/images/homenetwork-ntopng/wireshark-switch.png)
+![](/images/homenetwork-ntopng/switch-net.jpg)
+
+ゲーム機など家のネットワーク通信が確認できました。
+
+## まとめ
+
+ポートミラーリング + Wiresharkで家のネットワーク通信を見ることができました。
+
+次記事書くなら、下記あたりかなーの気持ちです。
+- ntopng導入
+- IPv6あたり
+- TURNやSTUNサーバについて
