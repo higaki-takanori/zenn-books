@@ -49,12 +49,12 @@ publication_name: "levtech"
 
 以下の固有名詞で説明します。
 
-- ポートミラーリングができるルータ: RTX1210
+- ポートミラーリングができるルータ: **RTX1210**
   - 工場出荷状態でした。
   - 筆者はヤフオクで購入しました。
-- 無線LANルータ: I-O DATA WN-DX1200GR
-- ルータ設定用PC: Macbook Pro
-- 通信確認用PC: Macbook Pro
+- 無線LANルータ: **I-O DATA WN-DX1200GR**
+- ルータ設定用PC: **Macbook Pro**
+- 通信確認用PC: **Macbook Pro**
 
 ![](https://network.yamaha.com/var/site/storage/images/_aliases/size_large/1/8/8/8/18881-17-jpn-JP/rtx1210_main.jpg =250x)
 
@@ -153,12 +153,16 @@ Password: <パスワードを入力する（初期状態の場合は何も入力
 
 #### IPv6の設定
 
-**LAN2のDHCPクライアントの設定**
+**LAN2のDHCPv6クライアントの設定**
 ```Shell
 ipv6 lan2 dhcp service client ir=on
 ```
 
-LAN2がISPから「グローバルIPv6プレフィックス」を取得できるようになります。
+LAN2がISPから「グローバルルーティングプレフィックス」を取得できるようになります。
+
+参考: [DHCPv6クライアント](https://wa3.i-3-i.info/word19691.html)
+
+参考: [IPv6アドレス](https://www.infraexpert.com/study/ipv6z3.html)
 
 **RAメッセージ送信の設定**
 ```Shell
@@ -170,6 +174,7 @@ LAN1内の機器に対してルータがRA(Router Advertisement)メッセージ�
 
 RAメッセージで配布するプレフィックスがLAN2で取得した「グローバルIPv6プレフィックス」になります。
 
+参考: [Router Advertisementメッセージ](https://www.infraexpert.com/study/ipv6z12.html)
 
 **LAN1のDHCPv6サーバの設定**
 ```Shell
@@ -221,6 +226,8 @@ tunnel select 1
 
 IPv4 over IPv6については[こちらのHP](https://www.ntt.com/business/services/network/internet-connect/ocn-business/bocn/knowledge/archive_115.html)を参考にしてください。
 
+※ IPoE方式だとルータの設定なしではIPv4の通信ができないのでIPv4 over IPv6の設定が必要です。
+
 **セキュリティ**
 
 ```Shell
@@ -268,6 +275,8 @@ lan port-mirroring lan1 8 in 1 2 3 4 5 6 7 out 1 2 3 4 5 6 7
 ```
 
 LAN1のポート1~7の受信・送信された通信データがポート8にコピーされます。
+
+このあと、ポート8に繋いだPCでその他のポートの通信をみたいので、ミラーリングの設定をします。
 
 :::details 全体設定
 
@@ -336,8 +345,6 @@ dns server dhcp lan2
 
 RTX1210のLAN2にインターネットとのLANケーブルを接続します。
 
-※ LAN1のポート2ではないことに注意が必要です。
-
 ### 家のネットワークの無線対応
 
 今のままではRTX1210と繋がっている機器しかインターネットと通信できないです。
@@ -368,17 +375,14 @@ Mac(USBタイプのNIC)とRTX1210のLAN1のポート8をLANケーブルで接続
 
 **Wiresharkで通信監視**
 
-USB NIC接続前
-![](/images/homenetwork-ntopng/wireshark.png)
-
-USB NIC接続後
+USB NIC(筆者の環境ではAX88179A)を選択してWiresharkを起動します。
 ![](/images/homenetwork-ntopng/wireshark-usb.png)
 
 Wireshark
 ![](/images/homenetwork-ntopng/wireshark-switch.png)
 ![](/images/homenetwork-ntopng/switch-net.jpg)
 
-ゲーム機など家のネットワーク通信が確認できました。
+記事の冒頭で見たようにゲーム機など家のネットワーク通信が確認できました。
 
 ## まとめ
 
