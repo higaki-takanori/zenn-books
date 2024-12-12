@@ -1,11 +1,14 @@
 ---
-title: "家のネットワーク見てみた"
+title: "ポートミラーリング + Wiresharkで家の通信見てみた"
 emoji: "🔎"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["network", "yamaha-router"]
 published: false
 publication_name: "levtech"
 ---
+
+この記事は「[レバテック開発部 Advent Calendar 2024](https://qiita.com/advent-calendar/2024/levtech)」の 16 日目の記事です！
+昨日の記事は、[kima](https://zenn.dev/kima000) さんの「XXXXXXXXXXXXXXXXXX」でした。
 
 ## はじめに
 
@@ -385,3 +388,8 @@ Wireshark
 - ntopng導入
 - IPv6あたり
 - TURNやSTUNサーバについて
+
+## アドベントカレンダー予告
+
+明日は [yuta_tsuge](https://qiita.com/yuta_tsuge) さんが投稿します！！！
+「[レバテック開発部 Advent Calendar 2024](https://qiita.com/advent-calendar/2024/levtech)」をぜひご購読ください🥳
