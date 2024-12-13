@@ -3,7 +3,8 @@ title: "ポートミラーリング + Wiresharkで家の通信見てみた"
 emoji: "🔎"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["network", "yamaha-router"]
-published: false
+published: true
+published_at: 2024-12-16 12:00
 publication_name: "levtech"
 ---
 
