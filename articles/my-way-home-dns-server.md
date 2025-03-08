@@ -3,7 +3,7 @@ title: "僕はこうやって自宅DNSサーバを使ってます"
 emoji: "📛"
 type: "idea" # tech: 技術記事 / idea: アイデア
 topics: ["Bind9", "DNS", "Github Actions"]
-published: false
+published: true
 ---
 
 # はじめに
@@ -34,13 +34,13 @@ published: false
 
 # 結論
 
-Github ActionsのセルフホストランナーでDNSサーバの設定を変更させる！
+Github ActionsのセルフホステッドランナーでDNSサーバの設定を変更させる！
 
 # Special Thanks
 
 [デロさん](https://x.com/dero1to)
 
-デロさんにGithub Actionsのセルフホストランナー+DNSサーバについて教えていただきました！
+デロさんにGithub Actionsのセルフホステッドランナー+DNSサーバについて教えていただきました！
 
 # やり方
 
@@ -214,7 +214,7 @@ dig @192.168.0.9 192.168.0.5
 
 自分はここで`git push`します。
 
-### Github Actions のセルフホストランナーの構築
+### Github Actions のセルフホステッドランナーの構築
 
 Github Actionsは[こちら](https://qiita.com/h_tyokinuhata/items/7a9297f75d0513572f4a)を参考に構築してください。
 
@@ -224,9 +224,9 @@ workflowsはgit管理しているので、DNSサーバの外で`git clone`して
 
 ここではDNSサーバ内を前提に説明します。
 
-まず、`/etc/bind`配下に`.github`ディレクトリを作成してください。
+まず、`/etc/bind`配下に`.github/workflows`ディレクトリを作成してください。
 
-次に、`workflows/deploy.yaml`を以下の内容で保存してください。
+次に、`deploy.yaml`を以下の内容で保存してください。
 
 ```yaml
 name: Release DNS Setting
@@ -250,6 +250,12 @@ jobs:
 ```
 
 これで、DNS設定を変更したいときは`main`ブランチへのプルリクをマージするだけで設定が変更されるようになります。
+
+簡単な流れは以下です。
+
+- `main`ブランチへのプルリクをマージ
+- Github Actionsセルフホステッドランナーがworkflowsに沿って動き始める
+  - DNSの設定変更
 
 最終的なdirectory構成だけ示しておきます。
 
