@@ -3,7 +3,7 @@ title: "僕はこうやって自宅DNSサーバを使ってます"
 emoji: "📛"
 type: "idea" # tech: 技術記事 / idea: アイデア
 topics: ["Bind9", "DNS", "Github Actions"]
-published: false
+published: true
 ---
 
 # はじめに
