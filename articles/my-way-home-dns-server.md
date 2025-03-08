@@ -265,8 +265,7 @@ jobs:
 │   └── ...
 ├── .github
 │   └── workflows
-│       ├── README.md
-│       └── deploy.yaml
+│       └── deploy.yaml // 追加
 ├── bind.keys
 ├── db.0
 ├── db.127
