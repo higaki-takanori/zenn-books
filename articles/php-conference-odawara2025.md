@@ -13,6 +13,8 @@ publication_name: "levtech"
 
 [PHPカンファレンス小田原2025](https://phpcon-odawara.jp/2025/)のレバテック開発部のスポンサーセッションで「[古き良き Laravel のシステムは関数型スタイルでリファクタできるのか](https://speakerdeck.com/leveragestech/gu-kiliang-ki-laravel-nosisutemuha-guan-shu-xing-sutairuderihuakutadekirunoka)」を発表しました。
 
+@[speakerdeck](370920ae44cb45bf97dde8d29440ab32)
+
 PHPカンファレンス小田原2025では最高に素敵なメンバーと一緒にコアスタッフもやっていたのもあり、自分にとってもすごく特別なカンファレンスで登壇できて幸せでした！！
 
 スタッフとしてのブログはまた別で書くとして、今回はスポンサーセッションについて振り返りたいと思います。
