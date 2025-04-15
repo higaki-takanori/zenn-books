@@ -3,7 +3,7 @@ title: "PHPカンファレンス小田原2025でスポンサーセッション�
 emoji: "🐘"
 type: "idea" # tech: 技術記事 / idea: アイデア
 topics: ["php", "カンファレンス", "PHPカンファレンス小田原", "小田原"]
-published: false
+published: true
 publication_name: "levtech"
 ---
 
