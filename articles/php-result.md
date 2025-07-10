@@ -17,6 +17,10 @@ publication_name: "levtech"
 
 どうやってPHPでResult型を実装するかの部分についての説明をこの記事に記載しておきます。
 
+# Special Thanks
+
+PHPでResult型を実装する際に[tadsan](https://x.com/tadsan)に相談に乗っていただきました。本当にありがとうございました。
+
 # どうやってPHPでResult型を実現するか
 
 ## 基本方針
@@ -75,6 +79,8 @@ final readonly class Err implements Result {
 
 `isOk`は`Result`の中身が`Ok`かチェックする関数です。
 
+言い換えれば、ある処理の結果が成功したことを確認する関数です。
+
 ### Result interface
 
 ```php
@@ -87,6 +93,8 @@ interface Result
     public function isOk(): bool;
 }
 ```
+
+`@phpstan-assert-if-true`と`@phpstan-assert-if-false`で型のnarrowingを明示的にしています。
 
 ### Ok
 
@@ -135,32 +143,65 @@ interface Result
     public function isErr(): bool;
 ```
 
+`@phpstan-assert-if-true`と`@phpstan-assert-if-false`で型のnarrowingを明示的にしています。
+
 ### Ok
 
 ```php
-/**
- * @template T
- * @implements Result<T, never>
- */
 final readonly class Ok implements Result
 {
-    /**
-     * @param T $ok
-     */
-    public function __construct(
-        private mixed $ok,
-    ) {}
-
-    public function isOk(): true
-    {
-        return true;
-    }
+    // ...
 
     public function isErr(): false
     {
         return false;
     }
+}
+```
 
+### Err
+
+```php
+final readonly class Err implements Result
+{
+    // ...
+
+    public function isErr(): true
+    {
+        return true;
+    }
+}
+```
+
+## unwrapの実装
+
+`unwrap`は`Ok`の値を返却する関数です。
+
+`Result`の中身が`Err`の時に`unwrap`を実行すると`LogicException`を投げてnever型を返すようにしました。
+
+これにより、後続の処理を記載した際にPHPStanがエラーを吐いてくれるので、ある処理が失敗した時に成功時の値を取得しようしていることに気づけます。
+
+### Result interface
+
+```php
+interface Result
+{
+    // ...
+
+    /**
+     * @return ($this is Result<T, never> ? T : never)
+     */
+    public function unwrap(): mixed;
+}
+```
+
+interfaceでnever型か成功時の値が返ってくることを明示しました。
+
+### Ok
+
+```php
+final readonly class Ok implements Result
+{
     /**
      * @return T
      */
@@ -168,7 +209,58 @@ final readonly class Ok implements Result
     {
         return $this->ok;
     }
+}
+```
 
+### Err
+
+```php
+final readonly class Err implements Result
+{
+    // ...
+
+    /**
+     * @return never
+     */
+    public function unwrap(): never
+    {
+        throw new \LogicException('called Result->unwrap() on an err value');
+    }
+}
+```
+
+
+## unwrapErrの実装
+
+`unwrapErr`は`Err`の値を返却する関数です。
+
+`Result`の中身が`Ok`の時に`unwrapErr`を実行すると`LogicException`を投げてnever型を返すようにしました。
+
+これにより、後続の処理を記載した際にPHPStanがエラーを吐いてくれるので、ある処理が成功した時に失敗時の値を取得しようしていることに気づけます。
+
+### Result interface
+
+```php
+interface Result
+{
+    // ...
+
+    /**
+     * @return ($this is Result<never,E> ? E : never)
+     */
+    public function unwrapErr(): mixed;
+}
+```
+
+interfaceでnever型か失敗時の値が返ってくることを明示しました。
+
+### Ok
+
+```php
+final readonly class Ok implements Result
+{
+    // ...
+    
     /**
      * @return never
      */
@@ -176,7 +268,55 @@ final readonly class Ok implements Result
     {
         throw new \LogicException('called Result->unwrapErr() on an ok value');
     }
+}
+```
 
+### Err
+
+```php
+final readonly class Err implements Result
+{
+    // ...
+
+    /**
+     * @return E
+     */
+    public function unwrapErr(): mixed
+    {
+        return $this->err;
+    }
+}
+```
+
+## unwrapOrの実装
+
+`unwrapOr`は`Result`の型が`Ok`の場合は`Ok`の値を返却し、`Err`の場合は、引数に指定したものを返却します。
+
+### Result interface
+
+```php
+interface Result
+{
+    // ...
+
+    /**
+     * @template D
+     * @param D $default
+     * @return T|D
+     */
+    public function unwrapOr(mixed $default): mixed;
+}
+```
+
+interfaceで指定したデフォルトの値か成功時の値が返ってくることを明示しました。
+
+### Ok
+
+```php
+final readonly class Ok implements Result
+{
+    // ...
+    
     /**
      * @template D
      * @param D $default
@@ -192,51 +332,9 @@ final readonly class Ok implements Result
 ### Err
 
 ```php
-<?php
-
-declare(strict_types=1);
-
-namespace App\Result;
-
-/**
- * @template E
- * @implements Result<never, E>
- */
 final readonly class Err implements Result
 {
-    /**
-     * @param E $err
-     */
-    public function __construct(
-        private mixed $err,
-    ) {
-    }
-
-    public function isOk(): false
-    {
-        return false;
-    }
-
-    public function isErr(): true
-    {
-        return true;
-    }
-
-    /**
-     * @return never
-     */
-    public function unwrap(): never
-    {
-        throw new \LogicException('called Result->unwrap() on an err value');
-    }
-
-    /**
-     * @return E
-     */
-    public function unwrapErr(): mixed
-    {
-        return $this->err;
-    }
+    // ...
 
     /**
      * @template D
@@ -249,107 +347,6 @@ final readonly class Err implements Result
     }
 }
 ```
-
-## unwrapの実装
-
-`unwrap`は`Ok`の値を返却する関数です。
-
-`Result`の中身が`Err`の時に`unwrap`を実行すると`RuntimeException`を投げるようにしました。
-
-
-### Result interface
-
-```php
-<?php
-
-declare(strict_types=1);
-
-namespace App\Result;
-
-/**
- * @template T
- * @template E
- */
-interface Result
-{
-    /**
-     * @phpstan-assert-if-true Ok<T> $this
-     * @phpstan-assert-if-false Err<E> $this
-     */
-    public function isOk(): bool;
-    /**
-     * @phpstan-assert-if-true Err<E> $this
-     * @phpstan-assert-if-false Ok<T> $this
-     */
-    public function isErr(): bool;
-
-    /**
-     * @return ($this is Result<T, never>? T : never)
-     */
-    public function unwrap(): mixed;
-
-    /**
-     * @return ($this is Result<never,E> ? E : never)
-     */
-    public function unwrapErr(): mixed;
-
-    /**
-     * @template D
-     * @param D $default
-     * @return T|D
-     */
-    public function unwrapOr(mixed $default): mixed;
-}
-```
-
-### Ok
-
-```php
-
-```
-
-### Err
-
-```php
-
-```
-
-
-## unwrapErrの実装
-
-`unwrapErr`は`Err`の値を返却する関数です。
-
-`Result`の中身が`Ok`の時に`unwrapErr`を実行すると`RuntimeException`を投げるようにしました。
-
-
-### Result interface
-
-```php
-```
-
-### Ok
-
-```php
-
-```
-
-### Err
-
-```php
-
-```
-
-## unwrapOrの実装
-
-`unwrapOr`は`Result`の型が`Ok`の場合は`Ok`の値を返却し、`Err`の場合は、引数に指定したものを返却します。
-
-この記事で`unwrapOr`の実装は以下の2通りの方法を記載します。
-
-- interfaceで定義した場合
-- PHPStanのAllowedSubtypesを使って実装する場合
-
-interfaceで定義した場合、PHPStanの型推論で`unwrapOr`の返り値を正しく返せないため、PHPStanのAllowedSubtypesを使って実装する方法も記載しました。
-（正しく型推論できる方法をご存知の方はコメント欄に書いてくださいる非常に助かります）
 
 ### unwrapOrをinterfaceで定義した場合
 
@@ -364,7 +361,6 @@ interfaceで定義した場合、PHPStanの型推論で`unwrapOr`の返り値を
     public function unwrapOr(mixed $default): mixed;
 ```
 
-
 最初、以下の形で型推論できると思っていたのですがPHPStanのエラーが出ました。
 
 ```php
@@ -376,15 +372,10 @@ interfaceで定義した場合、PHPStanの型推論で`unwrapOr`の返り値を
     public function unwrapOr(mixed $default): mixed;
 ```
 
-`phpstan: Condition "T is never" in conditional return type is always false.`
-
-interface側で`T`は常にneverでないと
-
 ### unwrapOrをPHPStanのAllowedSubtypesを使って実装する場合
 
 
 
 
-# まとめ・宣伝
-
+# まとめ
 
