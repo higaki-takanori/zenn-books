@@ -13,8 +13,6 @@ publication_name: "levtech"
 
 [PHPカンファレンス関西2025](https://2025.kphpug.jp/)の「[PHPでResult型（クラス）やってみよう](https://fortee.jp/phpcon-kansai2025/proposal/6d3a6fd6-f8e1-4362-adad-4f34548b7a9f)」で時間の関係で省略せざるを得ない部分の補足資料となります。
 
-@[speakerdeck](370920ae44cb45bf97dde8d29440ab32)
-
 どうやってPHPでResult型を実装するかの部分についての説明をこの記事に記載しておきます。
 
 # Special Thanks
@@ -94,7 +92,7 @@ interface Result
 }
 ```
 
-`@phpstan-assert-if-true`と`@phpstan-assert-if-false`で型のnarrowingを明示的にしています。
+`@phpstan-assert-if-true`と`@phpstan-assert-if-false`で型のnarrowingを行なっています。
 
 ### Ok
 
@@ -143,7 +141,7 @@ interface Result
     public function isErr(): bool;
 ```
 
-`@phpstan-assert-if-true`と`@phpstan-assert-if-false`で型のnarrowingを明示的にしています。
+`@phpstan-assert-if-true`と`@phpstan-assert-if-false`で型のnarrowingを行なっています。
 
 ### Ok
 
@@ -302,13 +300,13 @@ interface Result
     /**
      * @template D
      * @param D $default
-     * @return T|D
+     * @return ($this is Result<T, E> ? T|D : ($this is Result<never, E> ? D : T))
      */
     public function unwrapOr(mixed $default): mixed;
 }
 ```
 
-interfaceで指定したデフォルトの値か成功時の値が返ってくることを明示しました。
+`@return T|D`で充分だと思うんですが、 型のnarrowingも行うようにしました。
 
 ### Ok
 
@@ -348,34 +346,14 @@ final readonly class Err implements Result
 }
 ```
 
-### unwrapOrをinterfaceで定義した場合
+# 補足
 
-ある程度型推論を妥協しても良い場合は、以下のような実装になるんじゃないかと思います。
+PHPStanのAllowedSubtypesを使用することでPHPStanに`Result`のinterfaceを実装するクラスは`Ok`と`Err`の2つだけであることを伝えることができます。
 
-```php
-    /**
-     * @template D
-     * @param D $default
-     * @return T|D
-     */
-    public function unwrapOr(mixed $default): mixed;
-```
-
-最初、以下の形で型推論できると思っていたのですがPHPStanのエラーが出ました。
-
-```php
-    /**
-     * @template D
-     * @param D $default
-     * @return (T is never ? D : T)
-     */
-    public function unwrapOr(mixed $default): mixed;
-```
-
-### unwrapOrをPHPStanのAllowedSubtypesを使って実装する場合
-
-
-
+https://phpstan.org/developing-extensions/allowed-subtypes
 
 # まとめ
 
+PHPでResult型を実装する方法について説明しました。
+
+この記事がPHPでResult型を実装する際の参考になれば幸いです。
