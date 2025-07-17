@@ -4,7 +4,6 @@ emoji: "🐘"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["php", "カンファレンス", "PHPカンファレンス関西", "Result型"]
 published: false
-publication_name: "levtech"
 ---
 
 # はじめに
@@ -46,10 +45,10 @@ interface Result {
  */
 final readonly class Ok implements Result {
     /**
-     * @param T $ok
+     * @param T $value
      */
     public function __construct(
-        private mixed $ok,
+        private mixed $value,
     ) {}
     
     // 各関数を実装
@@ -63,10 +62,10 @@ final readonly class Ok implements Result {
  */
 final readonly class Err implements Result {
     /**
-     * @param E $err
+     * @param E $value
      */
     public function __construct(
-        private mixed $err,
+        private mixed $value,
     ) {}
     
     // 各関数を実装
@@ -205,7 +204,7 @@ final readonly class Ok implements Result
      */
     public function unwrap(): mixed
     {
-        return $this->ok;
+        return $this->value;
     }
 }
 ```
@@ -281,7 +280,7 @@ final readonly class Err implements Result
      */
     public function unwrapErr(): mixed
     {
-        return $this->err;
+        return $this->value;
     }
 }
 ```
@@ -322,7 +321,7 @@ final readonly class Ok implements Result
      */
     public function unwrapOr(mixed $default): mixed
     {
-        return $this->ok;
+        return $this->value;
     }
 }
 ```
@@ -351,6 +350,18 @@ final readonly class Err implements Result
 PHPStanのAllowedSubtypesを使用することでPHPStanに`Result`のinterfaceを実装するクラスは`Ok`と`Err`の2つだけであることを伝えることができます。
 
 https://phpstan.org/developing-extensions/allowed-subtypes
+
+
+あと、[phpstan-sealed](https://github.com/phpstan/phpstan-src/pull/4095)がリリースされると、AllowedSubTypesClassReflectionExtensionの代わりに、以下の記載だけで済むみたいです！
+
+```php
+/** 
+ *  @phpstan-sealed Ok|Err
+ */
+interface Result {
+    // ...
+}
+```
 
 # まとめ
 
