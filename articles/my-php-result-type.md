@@ -3,7 +3,7 @@ title: "PHPでResult型やってみる"
 emoji: "🐘"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["php", "カンファレンス", "PHPカンファレンス関西", "Result型"]
-published: false
+published: true
 ---
 
 # はじめに
