@@ -46,10 +46,10 @@ interface Result {
  */
 final readonly class Ok implements Result {
     /**
-     * @param T $ok
+     * @param T $value
      */
     public function __construct(
-        private mixed $ok,
+        private mixed $value,
     ) {}
     
     // 各関数を実装
@@ -63,10 +63,10 @@ final readonly class Ok implements Result {
  */
 final readonly class Err implements Result {
     /**
-     * @param E $err
+     * @param E $value
      */
     public function __construct(
-        private mixed $err,
+        private mixed $value,
     ) {}
     
     // 各関数を実装
@@ -205,7 +205,7 @@ final readonly class Ok implements Result
      */
     public function unwrap(): mixed
     {
-        return $this->ok;
+        return $this->value;
     }
 }
 ```
@@ -281,7 +281,7 @@ final readonly class Err implements Result
      */
     public function unwrapErr(): mixed
     {
-        return $this->err;
+        return $this->value;
     }
 }
 ```
@@ -322,7 +322,7 @@ final readonly class Ok implements Result
      */
     public function unwrapOr(mixed $default): mixed
     {
-        return $this->ok;
+        return $this->value;
     }
 }
 ```
