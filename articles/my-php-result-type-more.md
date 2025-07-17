@@ -26,26 +26,38 @@ PHPでResult型を実装するにあたり、より便利な関数の説明が�
  */
 interface Result
 {
-    public function isOk(): bool;
-    public function isErr(): bool;
     /**
-     * @return T
+     * @phpstan-assert-if-true Ok<T> $this
+     * @phpstan-assert-if-false Err<E> $this
+     */
+    public function isOk(): bool;
+    
+    /**
+     * @phpstan-assert-if-true Err<E> $this
+     * @phpstan-assert-if-false Ok<T> $this
+     */
+    public function isErr(): bool;
+    
+    /**
+     * @return ($this is Result<T, never> ? T : never)
      */
     public function unwrap(): mixed;
+    
     /**
-     * @return E
+     * @return ($this is Result<never,E> ? E : never)
      */
     public function unwrapErr(): mixed;
+    
     /**
      * @template D
      * @param D $default
-     * @return O|D
+     * @return ($this is Result<T, E> ? T|D : ($this is Result<never, E> ? D : T))
      */
     public function unwrapOr(mixed $default): mixed;
 
     /**
      * @template F
-     * @param callable(O):F $fn
+     * @param callable(T):F $fn
      * @return Result<F, E>
      */
     public function map(callable $fn): Result;
@@ -53,7 +65,7 @@ interface Result
     /**
      * @template U
      * @template F
-     * @param callable(O): Result<U, F> $fn
+     * @param callable(T): Result<U, F> $fn
      * @return Result<U, F|E>
      */
     public function flatMap(callable $fn): Result;
@@ -70,25 +82,19 @@ interface Result
 final readonly class Ok implements Result
 {
     /**
-     * @param T $ok
+     * @param T $value
      */
     public function __construct(
-        private mixed $ok,
+        private mixed $value,
     ) {
     }
 
-    /**
-     * @return bool
-     */
-    public function isOk(): bool
+    public function isOk(): true
     {
         return true;
     }
 
-    /**
-     * @return bool
-     */
-    public function isErr(): bool
+    public function isErr(): false
     {
         return false;
     }
@@ -98,15 +104,12 @@ final readonly class Ok implements Result
      */
     public function unwrap(): mixed
     {
-        return $this->ok;
+        return $this->value;
     }
 
-    /**
-     * @return never
-     */
     public function unwrapErr(): never
     {
-        throw new RuntimeException('called Result->unwrapErr() on an ok value');
+        throw new LogicException('called Result->unwrapErr() on an ok value');
     }
 
     /**
@@ -116,7 +119,7 @@ final readonly class Ok implements Result
      */
     public function unwrapOr(mixed $default): mixed
     {
-        return $this->ok;
+        return $this->value;
     }
 
     /**
@@ -153,35 +156,26 @@ final readonly class Ok implements Result
 final readonly class Err implements Result
 {
     /**
-     * @param E $err
+     * @param E $value
      */
     public function __construct(
-        private mixed $err,
+        private mixed $value,
     ) {
     }
 
-    /**
-     * @return bool
-     */
-    public function isOk(): bool
+    public function isOk(): false
     {
         return false;
     }
 
-    /**
-     * @return bool
-     */
-    public function isErr(): bool
+    public function isErr(): true
     {
         return true;
     }
 
-    /**
-     * @return never
-     */
     public function unwrap(): never
     {
-        throw new RuntimeException('called Result->unwrap() on an err value');
+        throw new LogicException('called Result->unwrap() on an err value');
     }
 
     /**
@@ -189,7 +183,7 @@ final readonly class Err implements Result
      */
     public function unwrapErr(): mixed
     {
-        return $this->err;
+        return $this->value;
     }
 
     /**
@@ -222,7 +216,27 @@ final readonly class Err implements Result
 :::
 
 
-## 基本方針
+## map実装
+
+mapとは、Rustの実装では
+
+> /// Maps a `Result<T, E>` to `Result<U, E>` by applying a function to a contained [`Ok`] value, leaving an [`Err`] value untouched.
+
+と説明されています。
+
+自分は以下のように解釈しました。
+
+- Okの場合は、`T -> U`になる関数を適用して、`Result<T, E>`を`Result<U, E>`にする
+
+- Errの場合は、何をしない
+
+
+
+### Result Interface
+
+### Ok
+
+### Err
 
 # 補足
 
