@@ -20,7 +20,158 @@ PHPでResult型を実装する際に[tadsan](https://x.com/tadsan)に相談に�
 
 # どうやってPHPでResult型を実現するか
 
+先に完成系のコードを載せておきます。
+
+::: details 最終的なResult Interface
+```php
+/**
+ * @template T
+ * @template E
+ */
+interface Result
+{
+    /**
+     * @phpstan-assert-if-true Ok<T> $this
+     * @phpstan-assert-if-false Err<E> $this
+     */
+    public function isOk(): bool;
+    
+    /**
+     * @phpstan-assert-if-true Err<E> $this
+     * @phpstan-assert-if-false Ok<T> $this
+     */
+    public function isErr(): bool;
+    
+    /**
+     * @return ($this is Result<T, never> ? T : never)
+     */
+    public function unwrap(): mixed;
+    
+    /**
+     * @return ($this is Result<never,E> ? E : never)
+     */
+    public function unwrapErr(): mixed;
+    
+    /**
+     * @template D
+     * @param D $default
+     * @return ($this is Result<T, E> ? T|D : ($this is Result<never, E> ? D : T))
+     */
+    public function unwrapOr(mixed $default): mixed;
+}
+```
+:::
+
+::: details 最終的なOkクラス
+```php
+/**
+ * @template T
+ * @implements Result<T, never>
+ */
+final readonly class Ok implements Result
+{
+    /**
+     * @param T $value
+     */
+    public function __construct(
+        private mixed $value,
+    ) {
+    }
+
+    public function isOk(): true
+    {
+        return true;
+    }
+
+    public function isErr(): false
+    {
+        return false;
+    }
+
+    /**
+     * @return T
+     */
+    public function unwrap(): mixed
+    {
+        return $this->value;
+    }
+
+    public function unwrapErr(): never
+    {
+        throw new LogicException('called Result->unwrapErr() on an ok value');
+    }
+
+    /**
+     * @template D
+     * @param D $default
+     * @return T
+     */
+    public function unwrapOr(mixed $default): mixed
+    {
+        return $this->value;
+    }
+}
+```
+:::
+
+
+::: details 最終的なErrクラス
+```php
+/**
+ * @template E
+ * @implements Result<never, E>
+ */
+final readonly class Err implements Result
+{
+    /**
+     * @param E $value
+     */
+    public function __construct(
+        private mixed $value,
+    ) {
+    }
+
+    public function isOk(): false
+    {
+        return false;
+    }
+
+    public function isErr(): true
+    {
+        return true;
+    }
+
+    public function unwrap(): never
+    {
+        throw new LogicException('called Result->unwrap() on an err value');
+    }
+
+    /**
+     * @return E
+     */
+    public function unwrapErr(): mixed
+    {
+        return $this->value;
+    }
+
+    /**
+     * @template D
+     * @param D $default
+     * @return D
+     */
+    public function unwrapOr(mixed $default): mixed
+    {
+        return $default;
+    }
+}
+```
+:::
+
 ## 基本方針
+
+:::message
+Rustのコードを参考にしました。
+:::
 
 基本方針として以下としました。（抽象クラスで実装しても同じことができるはずです）
 - `Result`のinterfaceを作成
@@ -216,12 +367,9 @@ final readonly class Err implements Result
 {
     // ...
 
-    /**
-     * @return never
-     */
     public function unwrap(): never
     {
-        throw new \LogicException('called Result->unwrap() on an err value');
+        throw new LogicException('called Result->unwrap() on an err value');
     }
 }
 ```
@@ -258,12 +406,9 @@ final readonly class Ok implements Result
 {
     // ...
     
-    /**
-     * @return never
-     */
     public function unwrapErr(): never
     {
-        throw new \LogicException('called Result->unwrapErr() on an ok value');
+        throw new LogicException('called Result->unwrapErr() on an ok value');
     }
 }
 ```
