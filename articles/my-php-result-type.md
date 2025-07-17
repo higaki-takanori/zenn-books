@@ -352,6 +352,18 @@ PHPStanのAllowedSubtypesを使用することでPHPStanに`Result`のinterface�
 
 https://phpstan.org/developing-extensions/allowed-subtypes
 
+
+あと、[phpstan-sealed](https://github.com/phpstan/phpstan-src/pull/4095)がリリースされると、AllowedSubTypesClassReflectionExtensionの代わりに、以下の記載だけで済むみたいです！
+
+```php
+/** 
+ *  @phpstan-sealed Ok|Err
+ */
+interface Result {
+    // ...
+}
+```
+
 # まとめ
 
 PHPでResult型を実装する方法について説明しました。
