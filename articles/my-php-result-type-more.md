@@ -56,9 +56,9 @@ interface Result
     public function unwrapOr(mixed $default): mixed;
 
     /**
-     * @template F
-     * @param callable(T):F $fn
-     * @return Result<F, E>
+     * @template U
+     * @param callable(T):U $fn
+     * @return Result<U, E>
      */
     public function map(callable $fn): Result;
 
@@ -129,7 +129,7 @@ final readonly class Ok implements Result
      */
     public function map(callable $fn): Result
     {
-        return new self($fn($this->ok));
+        return new self($fn($this->value));
     }
 
     /**
@@ -140,7 +140,7 @@ final readonly class Ok implements Result
      */
     public function flatMap(callable $fn): Result
     {
-        return $fn($this->ok);
+        return $fn($this->value);
     }
 }
 ```
@@ -220,7 +220,7 @@ final readonly class Err implements Result
 
 mapとは、Rustの実装では
 
-> /// Maps a `Result<T, E>` to `Result<U, E>` by applying a function to a contained [`Ok`] value, leaving an [`Err`] value untouched.
+> Maps a `Result<T, E>` to `Result<U, E>` by applying a function to a contained [`Ok`] value, leaving an [`Err`] value untouched.
 
 と説明されています。
 
@@ -234,9 +234,134 @@ mapとは、Rustの実装では
 
 ### Result Interface
 
+```php
+interface Result
+{
+    // ...
+
+    /**
+     * @template F
+     * @param callable(T):F $fn
+     * @return Result<F, E>
+     */
+    public function map(callable $fn): Result;
+}
+```
+
 ### Ok
 
+```php
+final readonly class Ok implements Result
+{
+    // ...
+    
+    /**
+     * @template U
+     * @param callable(T): U $fn
+     * @return Result<U, never>
+     */
+    public function map(callable $fn): Result
+    {
+        return new self($fn($this->value));
+    }
+}
+```
+
+
 ### Err
+
+```php
+final readonly class Err implements Result
+{
+    // ...
+
+    /**
+     * @return Result<never, E>
+     */
+    public function map(callable $fn): Result
+    {
+        return $this;
+    }
+}
+```
+
+### 使い方
+
+
+## andThen(flatMap)の実装
+
+and_thenとは、Rustの実装では
+
+> Calls `op` if the result is [`Ok`], otherwise returns the [`Err`] value of `self`.
+
+> pub fn and_then<U, F: FnOnce(T) -> Result<U, E>>(self, op: F) -> Result<U, E> 
+
+と説明されています。
+
+ここで`op` に着目すると、`T -> Result<U, E>`を返すものであることがわかります。
+
+自分は以下のように解釈しました。
+
+- Okの場合は、`T -> Result<U, E>`になる関数を適用して、`Result<T, E>`を`Result<U, E>`にする
+
+- Errの場合は、何をしない
+
+
+
+### Result Interface
+
+```php
+interface Result
+{
+    // ...
+
+    /**
+     * @template U
+     * @template F
+     * @param callable(T): Result<U, F> $fn
+     * @return Result<U, F|E>
+     */
+    public function flatMap(callable $fn): Result;
+}
+```
+
+### Ok
+
+```php
+final readonly class Ok implements Result
+{
+    // ...
+
+    /**
+     * @template U
+     * @template F
+     * @param callable(T): Result<U, F> $fn
+     * @return Result<U, F>
+     */
+    public function flatMap(callable $fn): Result
+    {
+        return $fn($this->value);
+    }
+}
+```
+
+
+### Err
+
+```php
+final readonly class Err implements Result
+{
+    // ...
+
+    /**
+     * @return Result<never, E>
+     */
+    public function flatMap(callable $fn): Result
+    {
+        return $this;
+    }
+}
+```
 
 # 補足
 
