@@ -244,18 +244,24 @@ mapとは、Rustの実装では
 ### Result Interface
 
 ```php
+/**
+ * @template T
+ * @template E
+ */
 interface Result
 {
     // ...
 
     /**
-     * @template F
-     * @param callable(T):F $fn
-     * @return Result<F, E>
+     * @template U
+     * @param callable(T):U $fn
+     * @return Result<U, E>
      */
     public function map(callable $fn): Result;
 }
 ```
+
+`map`の適用で `Result<T, E> -> Result<U, E>`に変化することがinterfaceでわかるかと思います。
 
 ### Ok
 
@@ -296,6 +302,46 @@ final readonly class Err implements Result
 
 ### 使い方
 
+`map`は失敗可能性が**ない**関数をResultのOkのvalueに適用させたい時に使用します。
+
+例）
+
+```php:mapの使い方
+$hoge = validateUserId($request['id'])
+    ->map(fn(ValidUserId $id) => getUserIdValue($id));
+    
+\PHPStan\dumpType($hoge); // Result<string, InvalidUserIdException>
+```
+
+`getUserIdValue`は`ValidUserId`を渡すと必ず成功して`string`を返す関数です。
+
+このような必ず成功する関数をResult型のOkのvalueに適用させたい時に`map`を使用します。
+
+```php:mapの使い方で使用するサンプル
+/**
+ * @return Result<ValidUserId, InvalidUserIdException>
+ */
+function validateUserId(string $id): Result
+{
+    if (empty($id)) {
+        return new Err(new InvalidUserIdException());
+    }
+
+    return new Ok(new ValidUserId());
+}
+
+class InvalidUserIdException {}
+
+class ValidUserId
+{
+    public function __construct(public string $value = '') {}
+}
+
+function getUserIdValue(ValidUserId $userId): string
+{
+    return $userId->value;
+}
+```
 
 ## andThen(flatMap)の実装
 
@@ -309,9 +355,22 @@ and_thenとは、Rustの実装では
 
 ここで`op` に着目すると、`T -> Result<U, E>`を返すものであることがわかります。
 
-自分は以下のように解釈しました。
+Rustでは`and_then`で受け取るErrの型は元々のエラーと同じ型でないといけなさそうです。
 
-- Okの場合は、`T -> Result<U, E>`になる関数を適用して、`Result<T, E>`を`Result<U, E>`にする
+これは私の考えですが、PHPで実装する際にはエラーの変換が大変なので、異なるエラー型を受け取れるようにしてそれぞれの可能性を型として持つ方が良いと考えました。
+
+また、入出力表は以下の通りです。
+
+> | method       | self     | function input | function result | output   |
+> |--------------|----------|----------------|-----------------|----------|
+> | [`and_then`] | `Err(e)` | (not provided) | (not evaluated) | `Err(e)` |
+> | [`and_then`] | `Ok(x)`  | `x`            | `Err(d)`        | `Err(d)` |
+> | [`and_then`] | `Ok(x)`  | `x`            | `Ok(y)`         | `Ok(y)`  |
+
+
+自分はPHPで実装する際には以下のようにするのが良いと考えました。
+
+- Okの場合は、`T -> Result<U, F>`になる関数を適用して、`Result<T, E>`を`Result<U, E|F>`にする
 
 - Errの場合は、何をしない
 
@@ -333,6 +392,12 @@ interface Result
     public function flatMap(callable $fn): Result;
 }
 ```
+
+`$fn`が`T`を受け取って`Result<U, F>`を返す関数`T -> Result<U, F>`であることを`callable(T): Result<U, F>`で示しました。
+
+Rustでは`T -> Result<U, E>`になる関数を適用して、`Result<T, E>`を`Result<U, E>`にしていましたが、
+
+自分は`T -> Result<U, F>`になる関数を適用して、`Result<T, E>`を`Result<U, E|F>`にしました。
 
 ### Ok
 
@@ -370,6 +435,19 @@ final readonly class Err implements Result
         return $this;
     }
 }
+```
+
+### 使い方
+
+`andThen(flatMap)`は失敗可能性が**ある**関数をResultのOkのvalueに適用させたい時に使用します。
+
+例）
+
+```php:andThenの使い方
+$hoge = validateUserId($request['id'])
+    ->map(fn(ValidUserId $id) => getUserIdValue($id));
+    
+\PHPStan\dumpType($hoge); // Result<string, InvalidUserIdException>
 ```
 
 # 補足
