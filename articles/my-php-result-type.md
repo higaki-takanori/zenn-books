@@ -534,7 +534,7 @@ function completePayment(ProcessingPayment $payment): Result {
 // 呼び出し側
 $result = completePayment($payment);
 if ($result->isErr()) {
-    return match (true) {
+    match (true) {
        $result->unwrapErr() instanceof PaymentAmountRuleError::class => // ... 支払金エラー時の処理
     }
 }
@@ -544,7 +544,7 @@ if ($result->isErr()) {
 しかし、`PaymentMethodNotRegistedError`がmatch文でチェックできていないので、PHPStanがエラーを出力してくれます。
 
 
-※ Union型でも網羅チェックはできますが、失敗時と成功時を同列に扱う必要があります。
+※ Union型でも網羅チェックはできますが、失敗時と成功時を同列でチェックを行う必要があります。
 
 # まとめ
 
