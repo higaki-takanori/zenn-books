@@ -8,15 +8,24 @@ published: false
 
 # はじめに
 
-こんにちは。ひがきです。
-
-PHPでResult型を実装するにあたり、より便利な関数の説明がしたくなったので、まとめていきます！！
-
 :::message
 この記事は[PHPでResult型やってみる](https://zenn.dev/higaki/articles/my-php-result-type)の続編です。
 :::
 
+こんにちは。ひがきです。
+
+PHPでResult型を実装するにあたり、より便利な関数の説明がしたくなったので、まとめていきます！！
+
+以下についてまとめていきます！（順次更新予定）
+
+- map
+- andThen(flatMap)
+
 # もっとResult型やってみる
+
+:::message
+Rustのコードを参考にしております。
+:::
 
 ::: details 元々のResult Interface
 ```php
