@@ -490,7 +490,7 @@ final readonly class Err implements Result
 }
 ```
 
-# 補足
+## 補足
 
 PHPStanのAllowedSubtypesを使用することでPHPStanに`Result`のinterfaceを実装するクラスは`Ok`と`Err`の2つだけであることを伝えることができます。
 
@@ -507,6 +507,44 @@ interface Result {
     // ...
 }
 ```
+
+# Result型で嬉しいところ
+
+複数のエラーの可能性がある場合、`match`文などを使用することで、失敗時の対応の網羅チェックできます。
+（PHPStanレベル5以上の場合）
+
+```php
+/**
+ * @return Result<CompletedPayment, PaymentAmountRuleError|PaymentMethodNotRegistedError>
+ */
+function completePayment(ProcessingPayment $payment): Result {
+    if ($payment->amount <= 0) {
+        return new Err(new PaymentAmountRuleError("Payment amount must be positive"));
+    }
+    if ($payment->method == PaymentMethod::NotRegisterd) {
+        return new Err(new PaymentMethodNotRegistedError("Payment amount must be positive"));
+    }
+    return new Ok(new CompletedPayment($payment->amount));
+}
+```
+
+上記のコードの場合、`completePayment`関数は`PaymentAmountRuleError`と`PaymentMethodNotRegistedError`の失敗の可能性があります。
+
+```php:呼び出し側
+// 呼び出し側
+$result = completePayment($payment);
+if ($result->isErr()) {
+    return match (true) {
+       $result->unwrapErr() instanceof PaymentAmountRuleError::class => // ... 支払金エラー時の処理
+    }
+}
+// ... 支払い完了時の処理
+```
+
+しかし、`PaymentMethodNotRegistedError`がmatch文でチェックできていないので、PHPStanがエラーを出力してくれます。
+
+
+※ Union型でも網羅チェックはできますが、失敗時と成功時を同列に扱う必要があります。
 
 # まとめ
 
