@@ -12,6 +12,8 @@ published: true
 
 [PHPカンファレンス関西2025](https://2025.kphpug.jp/)の「[PHPでResult型（クラス）やってみよう](https://fortee.jp/phpcon-kansai2025/proposal/6d3a6fd6-f8e1-4362-adad-4f34548b7a9f)」で時間の関係で省略せざるを得ない部分の補足資料となります。
 
+@[speakerdeck](51d71abd65834fd08ccdebdb25d6bdca)
+
 どうやってPHPでResult型を実装するかの部分についての説明をこの記事に記載しておきます。
 
 # Special Thanks
