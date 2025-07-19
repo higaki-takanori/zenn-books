@@ -12,6 +12,8 @@ published: true
 
 [PHPカンファレンス関西2025](https://2025.kphpug.jp/)の「[PHPでResult型（クラス）やってみよう](https://fortee.jp/phpcon-kansai2025/proposal/6d3a6fd6-f8e1-4362-adad-4f34548b7a9f)」で時間の関係で省略せざるを得ない部分の補足資料となります。
 
+@[speakerdeck](51d71abd65834fd08ccdebdb25d6bdca)
+
 どうやってPHPでResult型を実装するかの部分についての説明をこの記事に記載しておきます。
 
 # Special Thanks
@@ -534,7 +536,7 @@ function completePayment(ProcessingPayment $payment): Result {
 // 呼び出し側
 $result = completePayment($payment);
 if ($result->isErr()) {
-    return match (true) {
+    match (true) {
        $result->unwrapErr() instanceof PaymentAmountRuleError::class => // ... 支払金エラー時の処理
     }
 }
@@ -544,7 +546,7 @@ if ($result->isErr()) {
 しかし、`PaymentMethodNotRegistedError`がmatch文でチェックできていないので、PHPStanがエラーを出力してくれます。
 
 
-※ Union型でも網羅チェックはできますが、失敗時と成功時を同列に扱う必要があります。
+※ Union型でも網羅チェックはできますが、失敗時と成功時を同列でチェックを行う必要があります。
 
 # まとめ
 
