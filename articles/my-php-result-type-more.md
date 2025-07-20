@@ -19,7 +19,7 @@ PHPでResult型を実装するにあたり、より便利な関数の説明が�
 以下についてまとめていきます！（順次更新予定）
 
 - map
-- andThen(flatMap)
+- flatMap(andThen)
 
 # もっとResult型やってみる
 
@@ -27,7 +27,7 @@ PHPでResult型を実装するにあたり、より便利な関数の説明が�
 Rustのコードを参考にしております。
 :::
 
-::: details 元々のResult Interface
+::: details 最終的なResult Interface
 ```php
 /**
  * @template T
@@ -82,7 +82,7 @@ interface Result
 ```
 :::
 
-::: details 元々のOkクラス
+::: details 最終的なOkクラス
 ```php
 /**
  * @template T
@@ -156,7 +156,7 @@ final readonly class Ok implements Result
 :::
 
 
-::: details 元々のErrクラス
+::: details 最終的なErrクラス
 ```php
 /**
  * @template E
@@ -264,7 +264,7 @@ interface Result
 }
 ```
 
-`map`（`T -> U`）の適用で `Result<T, E> -> Result<U, E>`に変化することがinterfaceで明示しました。
+`map`（`T -> U`）の適用で `Result<T, E> -> Result<U, E>`に変化することをinterfaceで明示しました。
 
 ### Ok
 
@@ -349,16 +349,16 @@ function getUserIdValue(ValidUserId $userId): string
 ※ 愉快なコードだけど、説明用なのでご勘弁🙏
 :::
 
-ちなみに、この場合callableの部分はもう少し簡潔に書くこともできます。
+ちなみに、PHP 8.1以降だとcallableを簡潔に記載できます。
 
-```php:mapの使い方
+```php:mapの使い方（簡潔）
 $hoge = validateUserId($request['id'])
     ->map(getUserIdValue(...));
     
 \PHPStan\dumpType($hoge); // Result<string, InvalidUserIdException>
 ```
 
-## andThen(flatMap)の実装
+## flatMap(andThen)の実装
 
 and_thenとは、Rustの実装では
 
@@ -475,19 +475,19 @@ final readonly class Err implements Result
 
 ### 使い方
 
-`andThen(flatMap)`は失敗可能性が**ある**関数をResultのOkのvalueに適用させたい時に使用します。
+`flatMap(andThen)`は失敗可能性が**ある**関数をResultのOkのvalueに適用させたい時に使用します。
 
 例）
 
-```php:andThenの使い方
+```php:flatMapの使い方
 $fuga = validateUserId($request['id'])
     ->flatMap(fn(ValidUserId $id) => findUserById($id))
     
 \PHPStan\dumpType($fuga); // Result<User, InvalidUserIdException|UserNotFound>
 ```
 
-::: details andThenの使い方で使用するサンプルコード
-```php:andThenの使い方で使用するサンプルコード
+::: details flatMapの使い方で使用するサンプルコード
+```php:flatMapの使い方で使用するサンプルコード
 /**
  * @return Result<User, UserNotFound>
  */
@@ -539,6 +539,16 @@ class ValidUserId
 ```
 ※ 愉快なコードだけど、説明用なのでご勘弁🙏
 :::
+
+PHP 8.1以降だとcallableを簡潔に記載できます。
+
+```php:flatMapの使い方（簡潔）
+$fuga = validateUserId($request['id'])
+    ->flatMap(findUserById(...))
+    
+\PHPStan\dumpType($fuga); // Result<User, InvalidUserIdException|UserNotFound>
+```
+
 
 # まとめ
 
