@@ -237,7 +237,7 @@ mapとは、Rustの実装では
 
 - Okの場合は、`T -> U`になる関数を適用して、`Result<T, E>`を`Result<U, E>`にする
 
-- Errの場合は、何をしない
+- Errの場合は、何もせず自分自身を返す
 
 ```php:概念
 Result<T, E>
@@ -415,7 +415,7 @@ Rustでは`ErrorE -> ErrorF`は`Errors -> Errors`で捉えることができる�
 
 - Okの場合は、`T -> Result<U, F>`になる関数を適用して、`Result<T, E>`を`Result<U, E|F>`にする
 
-- Errの場合は、何をしない
+- Errの場合は、何もせず自分自身を返す
 
 ### Result Interface
 
