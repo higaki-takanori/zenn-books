@@ -3,7 +3,7 @@ title: "PHPでもっとResult型やってみる"
 emoji: "🐘"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["php", "Result型"]
-published: false
+published: true
 ---
 
 # はじめに
@@ -406,12 +406,11 @@ enum Errors {
 
 Rustでは`ErrorE -> ErrorF`は`Errors -> Errors`で捉えることができるので、`Result<T, E> -> Result<U, E>`で良いのかなと。
 
-> | Rust         | この記事                           |
-> |--------------|-----------------------------------|
-> | `Result<T, E> -> Result<U, E>` | `Result<T, E> -> Result<U, E\|F>` |
+| Rust         | この記事                           |
+|--------------|-----------------------------------|
+| `Result<T, E> -> Result<U, E>` | `Result<T, E> -> Result<U, E\|F>` |
 
-
-自分はPHPで実装する際には以下にしました。
+自分はPHPで以下のように実装しました。
 
 - Okの場合は、`T -> Result<U, F>`になる関数を適用して、`Result<T, E>`を`Result<U, E|F>`にする
 
