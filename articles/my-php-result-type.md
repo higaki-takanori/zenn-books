@@ -6,6 +6,13 @@ topics: ["php", "カンファレンス", "PHPカンファレンス関西", "Resu
 published: true
 ---
 
+2025/07/20追記
+
+続編となる記事を書きました！
+ご参考までに
+
+[PHPでもっとResult型やってみる](https://zenn.dev/higaki/articles/my-php-result-type-more)
+
 # はじめに
 
 こんにちは。ひがきです。
