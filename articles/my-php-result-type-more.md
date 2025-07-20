@@ -239,7 +239,10 @@ mapとは、Rustの実装では
 
 - Errの場合は、何をしない
 
-
+```php:概念
+Result<T, E>
+    ->map(callable(T):U) // Result<U, E>
+```
 
 ### Result Interface
 
@@ -261,7 +264,7 @@ interface Result
 }
 ```
 
-`map`の適用で `Result<T, E> -> Result<U, E>`に変化することがinterfaceでわかるかと思います。
+`map`（`T -> U`）の適用で `Result<T, E> -> Result<U, E>`に変化することがinterfaceで明示しました。
 
 ### Ok
 
@@ -317,7 +320,8 @@ $hoge = validateUserId($request['id'])
 
 このような必ず成功する関数をResult型のOkのvalueに適用させたい時に`map`を使用します。
 
-```php:mapの使い方で使用するサンプル
+::: details mapの使い方で使用するサンプルコード
+```php:mapの使い方で使用するサンプルコード
 /**
  * @return Result<ValidUserId, InvalidUserIdException>
  */
@@ -342,24 +346,23 @@ function getUserIdValue(ValidUserId $userId): string
     return $userId->value;
 }
 ```
+※ 愉快なコードだけど、説明用なのでご勘弁🙏
+:::
+
+ちなみに、この場合callableの部分はもう少し簡潔に書くこともできます。
+
+```php:mapの使い方
+$hoge = validateUserId($request['id'])
+    ->map(getUserIdValue(...));
+    
+\PHPStan\dumpType($hoge); // Result<string, InvalidUserIdException>
+```
 
 ## andThen(flatMap)の実装
 
 and_thenとは、Rustの実装では
 
 > Calls `op` if the result is [`Ok`], otherwise returns the [`Err`] value of `self`.
-
-> pub fn and_then<U, F: FnOnce(T) -> Result<U, E>>(self, op: F) -> Result<U, E> 
-
-と説明されています。
-
-ここで`op` に着目すると、`T -> Result<U, E>`を返すものであることがわかります。
-
-Rustでは`and_then`で受け取るErrの型は元々のエラーと同じ型でないといけなさそうです。
-
-これは私の考えですが、PHPで実装する際にはエラーの変換が大変なので、異なるエラー型を受け取れるようにしてそれぞれの可能性を型として持つ方が良いと考えました。
-
-また、入出力表は以下の通りです。
 
 > | method       | self     | function input | function result | output   |
 > |--------------|----------|----------------|-----------------|----------|
@@ -368,13 +371,46 @@ Rustでは`and_then`で受け取るErrの型は元々のエラーと同じ型で
 > | [`and_then`] | `Ok(x)`  | `x`            | `Ok(y)`         | `Ok(y)`  |
 
 
-自分はPHPで実装する際には以下のようにするのが良いと考えました。
+> ```rust:Rustでのand_thenの実装
+>impl<T, E> Result<T, E> {
+>    ...
+>
+>    pub fn and_then<U, F: FnOnce(T) -> Result<U, E>>(self, op: F) -> Result<U, E>
+>    
+>    ...
+>}
+>```
+
+と記載されています。
+
+`and_then`を適用すると`Result<T, E> -> Result<U, E>`になることが説明されています。
+
+また、`op` に着目すると、`T -> Result<U, E>`を返すものであることがわかります。
+
+Rustでは`and_then`で受け取るErrの型は**元々のエラーと同じ型**になっています。
+
+
+これは私の考えですが、PHPで実装する際にはエラーの変換が大変なので、**異なるエラー型を受け取れるようにしてそれぞれの可能性を型として持つ**方が良いと考えました。
+
+そもそもRustのenumは構造体を持つことができるので、同じエラーの型になっているのかなと思っております。
+
+簡単な例は以下です。
+
+```rust:rustのenum
+enum Errors {
+    ErrorE,
+    ErrorF,
+    ...
+}
+```
+
+Rustでは`ErrorE -> ErrorF`は`Errors -> Errors`で捉えることができるので、`Result<T, E> -> Result<U, E>`で良いのかなと。
+
+自分はPHPで実装する際には以下にしました。
 
 - Okの場合は、`T -> Result<U, F>`になる関数を適用して、`Result<T, E>`を`Result<U, E|F>`にする
 
 - Errの場合は、何をしない
-
-
 
 ### Result Interface
 
@@ -444,16 +480,68 @@ final readonly class Err implements Result
 例）
 
 ```php:andThenの使い方
-$hoge = validateUserId($request['id'])
-    ->map(fn(ValidUserId $id) => getUserIdValue($id));
+$fuga = validateUserId($request['id'])
+    ->flatMap(fn(ValidUserId $id) => findUserById($id))
     
-\PHPStan\dumpType($hoge); // Result<string, InvalidUserIdException>
+\PHPStan\dumpType($fuga); // Result<User, InvalidUserIdException|UserNotFound>
 ```
 
-# 補足
+::: details andThenの使い方で使用するサンプルコード
+```php:andThenの使い方で使用するサンプルコード
+/**
+ * @return Result<User, UserNotFound>
+ */
+function findUserById(ValidUserId $id): Result
+{
+    // Simulate a user lookup
+    $users = [
+        'user1' => new User(new ValidUserId(), 'Alice', ''),
+        'user2' => new User(new ValidUserId(), 'Bob', ''),
+    ];
+    if (isset($users[$id->value])) {
+        return new Ok($users[$id->value]);
+    }
+    return new Err(new UserNotFound('User not found'));
+}
+
+class User
+{
+    public function __construct(
+        public ValidUserId $id,
+        public string $name,
+        public string $email,
+    ) {}
+}
+
+class UserNotFound
+{
+    public function __construct(public string $message) {}
+}
+
+/**
+ * @return Result<ValidUserId, InvalidUserIdException>
+ */
+function validateUserId(string $id): Result
+{
+    if (empty($id)) {
+        return new Err(new InvalidUserIdException());
+    }
+
+    return new Ok(new ValidUserId());
+}
+
+class InvalidUserIdException {}
+
+class ValidUserId
+{
+    public function __construct(public string $value = '') {}
+}
+```
+※ 愉快なコードだけど、説明用なのでご勘弁🙏
+:::
 
 # まとめ
 
-PHPでResult型を実装する方法について説明しました。
+PHPでResult型をもっと実装する方法について説明しました。
 
-この記事がPHPでResult型を実装する際の参考になれば幸いです。
+この記事がどなたかの参考になれば幸いです。
