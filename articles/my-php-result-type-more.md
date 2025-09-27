@@ -6,6 +6,9 @@ topics: ["php", "Result型"]
 published: true
 ---
 
+(2025/09/27追記)
+flatMapよりもandThenの方が適切とのご指摘をいただきましたので、andThenに修正しました。
+
 # はじめに
 
 :::message
@@ -19,7 +22,7 @@ PHPでResult型を実装するにあたり、より便利な関数の説明が�
 以下についてまとめていきます！（順次更新予定）
 
 - map
-- flatMap(andThen)
+- andThen
 
 # もっとResult型やってみる
 
@@ -77,7 +80,7 @@ interface Result
      * @param callable(T): Result<U, F> $fn
      * @return Result<U, F|E>
      */
-    public function flatMap(callable $fn): Result;
+    public function andThen(callable $fn): Result;
 }
 ```
 :::
@@ -147,7 +150,7 @@ final readonly class Ok implements Result
      * @param callable(T): Result<U, F> $fn
      * @return Result<U, F>
      */
-    public function flatMap(callable $fn): Result
+    public function andThen(callable $fn): Result
     {
         return $fn($this->value);
     }
@@ -216,7 +219,7 @@ final readonly class Err implements Result
     /**
      * @return Result<never, E>
      */
-    public function flatMap(callable $fn): Result
+    public function andThen(callable $fn): Result
     {
         return $this;
     }
@@ -358,7 +361,7 @@ $hoge = validateUserId($request['id'])
 \PHPStan\dumpType($hoge); // Result<string, InvalidUserIdException>
 ```
 
-## flatMap(andThen)の実装
+## andThenの実装
 
 and_thenとは、Rustの実装では
 
@@ -429,7 +432,7 @@ interface Result
      * @param callable(T): Result<U, F> $fn
      * @return Result<U, F|E>
      */
-    public function flatMap(callable $fn): Result;
+    public function andThen(callable $fn): Result;
 }
 ```
 
@@ -452,7 +455,7 @@ final readonly class Ok implements Result
      * @param callable(T): Result<U, F> $fn
      * @return Result<U, F>
      */
-    public function flatMap(callable $fn): Result
+    public function andThen(callable $fn): Result
     {
         return $fn($this->value);
     }
@@ -470,7 +473,7 @@ final readonly class Err implements Result
     /**
      * @return Result<never, E>
      */
-    public function flatMap(callable $fn): Result
+    public function andThen(callable $fn): Result
     {
         return $this;
     }
@@ -479,19 +482,19 @@ final readonly class Err implements Result
 
 ### 使い方
 
-`flatMap(andThen)`は失敗可能性が**ある**関数をResultのOkのvalueに適用させたい時に使用します。
+`andThen`は失敗可能性が**ある**関数をResultのOkのvalueに適用させたい時に使用します。
 
 例）
 
-```php:flatMapの使い方
+```php:andThenの使い方
 $fuga = validateUserId($request['id'])
-    ->flatMap(fn(ValidUserId $id) => findUserById($id))
+    ->andThen(fn(ValidUserId $id) => findUserById($id))
     
 \PHPStan\dumpType($fuga); // Result<User, InvalidUserIdException|UserNotFound>
 ```
 
-::: details flatMapの使い方で使用するサンプルコード
-```php:flatMapの使い方で使用するサンプルコード
+::: details andThenの使い方で使用するサンプルコード
+```php:andThenの使い方で使用するサンプルコード
 /**
  * @return Result<User, UserNotFound>
  */
@@ -546,9 +549,9 @@ class ValidUserId
 
 PHP 8.1以降だとcallableを簡潔に記載できます。
 
-```php:flatMapの使い方（簡潔）
+```php:andThenの使い方（簡潔）
 $fuga = validateUserId($request['id'])
-    ->flatMap(findUserById(...))
+    ->andThen(findUserById(...))
     
 \PHPStan\dumpType($fuga); // Result<User, InvalidUserIdException|UserNotFound>
 ```
