@@ -293,7 +293,8 @@ systemd─┬─2*[agetty]
 186063 +++ exited with 0 +++
 ```
 
-様々な`less`が呼び出されていました。`bat`は`/usr/bin/less`がないような様々な環境で実行できることを想定して手当たり次第に`less`の実行を試みているのかなを思いを馳せました。
+様々な`less`が呼び出されていました。
+`bat`は`/usr/bin/less`がないような様々な環境で実行できることを想定して手当たり次第に`less`の実行を試みているのかなと思いを馳せました。
 
 `less` コマンドについても`$ strace -f -o less_trace -e execve less /etc/skel/.profile`でシステムコール単位で調べました。
 
