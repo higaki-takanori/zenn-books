@@ -438,6 +438,42 @@ https://ftp.riken.jp/GNU/bash/
 
 最初にざっくり概要をまとめておくと、
 
+```mermaid
+graph TD;
+    subgraph config-top.h 
+        ONE_SHOTを定義
+    end
+    
+    subgraph shell.c
+        main
+        run_one_command
+        main-->run_one_command
+    end
+    
+    run_one_command-->parse_and_execute
+    
+    subgraph evalstring.c
+        parse_and_execute
+    end
+    
+    parse_and_execute--"flagsをCMD_NO_FORK設定"<br/>pipe_in=NO_PIPE<br>pipe_out=NO_PIPE-->execute_command_internal
+    
+    subgraph execute_cmd.c
+        subgraph execute_disk_command
+            if{"flagsがCMD_NO_FORK
+                    pipe_inがNO_PIPE
+            pipe_outがNO_PIPE"}
+            if--Yes-->shell_execve
+            if--No-->forkする
+            forkする-->shell_execve
+        end
+
+        execute_command_internal--Simpleのflagsを採用する-->execute_simple_command
+        execute_simple_command-->execute_disk_command
+    end
+ 
+    shell_execve-->execve;
+```
 
 のようになっています。
 
@@ -468,8 +504,7 @@ main (int argc, char **argv, char **env)
       run_one_command (command_execution_string);
       exit_shell (last_command_exit_value);
 #else /* ONESHOT */
-      with_input_from_string (command_execution_string, "-c");
-      goto read_and_execute;
+...
 #endif /* !ONESHOT */
 ```
 
@@ -484,28 +519,8 @@ run_one_command (char *command)
 {
   int code;
 
-  code = setjmp_nosigs (top_level);
+...
 
-  if (code != NOT_JUMPED)
-    {
-#if defined (PROCESS_SUBSTITUTION)
-      unlink_fifo_list ();
-#endif /* PROCESS_SUBSTITUTION */
-      switch (code)
-	{
-	  /* Some kind of throw to top_level has occurred. */
-	case FORCE_EOF:
-	  return last_command_exit_value = 127;
-	case ERREXIT:
-	case EXITPROG:
-	case EXITBLTIN:
-	  return last_command_exit_value;
-	case DISCARD:
-	  return last_command_exit_value = 1;
-	default:
-	  command_error ("run_one_command", CMDERR_BADJUMP, code, 0);
-	}
-    }
    return (parse_and_execute (savestring (command), "-c", SEVAL_NOHIST|SEVAL_RESETLINE));
 }
 #endif /* ONESHOT */
@@ -514,7 +529,6 @@ run_one_command (char *command)
 `parse_and_execute`の中では、
 
 ```c
-		  command->flags |= CMD_NO_FORK;
 		  command->value.Simple->flags |= CMD_NO_FORK;
 ```
 
@@ -557,19 +571,8 @@ parse_and_execute (char *string, const char *from_file, int flags)
 		  command->value.Simple->flags |= CMD_NO_FORK;
 		}
 
-	      /* Can't optimize forks out here execept for simple commands.
-		 This knows that the parser sets up commands as left-side heavy
-		 (&& and || are left-associative) and after the single parse,
-		 if we are at the end of the command string, the last in a
-		 series of connection commands is
-		 command->value.Connection->second. */
-	      else if (command->type == cm_connection &&
-		       (flags & SEVAL_NOOPTIMIZE) == 0 &&
-		       can_optimize_connection (command))
-		{
-		  command->value.Connection->second->flags |= CMD_TRY_OPTIMIZING;
-		  command->value.Connection->second->value.Simple->flags |= CMD_TRY_OPTIMIZING;
-		}
+...
+
 #endif /* ONESHOT */
 
 ...
@@ -580,9 +583,42 @@ parse_and_execute (char *string, const char *from_file, int flags)
 ...
 ```
 
-`execute_command_internal`では、`execute_disk_command`を実行しています。
+`execute_command_internal`では、`execute_simple_command`を実行しています。
 
-```c
+```c:execute_cmd.c
+/* Execute the command passed in COMMAND, perhaps doing it asynchronously.
+   COMMAND is exactly what read_command () places into GLOBAL_COMMAND.
+   ASYNCHRONOUS, if non-zero, says to do this command in the background.
+   PIPE_IN and PIPE_OUT are file descriptors saying where input comes
+   from and where it goes.  They can have the value of NO_PIPE, which means
+   I/O is stdin/stdout.
+   FDS_TO_CLOSE is a list of file descriptors to close once the child has
+   been forked.  This list often contains the unusable sides of pipes, etc.
+
+   EXECUTION_SUCCESS or EXECUTION_FAILURE are the only possible
+   return values.  Executing a command with nothing in it returns
+   EXECUTION_SUCCESS. */
+int
+execute_command_internal (COMMAND *command, int asynchronous, int pipe_in, int pipe_out, struct fd_bitmap *fds_to_close)
+{
+...
+  switch (command->type)
+    {
+    case cm_simple:
+...
+	exec_result =
+	  execute_simple_command (command->value.Simple, pipe_in, pipe_out,
+				  asynchronous, fds_to_close);
+...
+      break;
+
+    case cm_for:
+...
+```
+
+`execute_simple_command`では`execute_disk_command`を実行しています。
+
+```c:execute_cmd.c
 /* The meaty part of all the executions.  We have to start hacking the
    real execution of commands here.  Fork a process, set things up,
    execute the command. */
@@ -593,10 +629,6 @@ execute_simple_command (SIMPLE_COM *simple_command, int pipe_in, int pipe_out, i
   char *command_line, *lastarg, *temp;
   int first_word_quoted, result, builtin_is_special, already_forked, dofork;
   int fork_flags, cmdflags;
-  pid_t old_last_async_pid;
-  sh_builtin_func_t *builtin;
-  SHELL_VAR *func;
-  volatile int old_builtin, old_command_builtin;
 
 ...
 
@@ -613,7 +645,7 @@ execute_simple_command (SIMPLE_COM *simple_command, int pipe_in, int pipe_out, i
 
 ちなみに、`fork`は`make_child`の中で行われています。
 
-```c
+```c:execute_cmd.c
 static int
 execute_disk_command (WORD_LIST *words, REDIRECT *redirects, char *command_line,
 		      int pipe_in, int pipe_out, int async,
@@ -622,12 +654,10 @@ execute_disk_command (WORD_LIST *words, REDIRECT *redirects, char *command_line,
   char *pathname, *command, **args, *p;
   int nofork, stdpath, result, fork_flags;
   pid_t pid;
-  SHELL_VAR *hookf;
-  WORD_LIST *wl;
+  
+...
 
-  stdpath = (cmdflags & CMD_STDPATH);	/* use command -p path */
   nofork = (cmdflags & CMD_NO_FORK);	/* Don't fork, just exec, if no pipes */
-  pathname = words->word->word;
 
 ...
 
@@ -647,11 +677,6 @@ execute_disk_command (WORD_LIST *words, REDIRECT *redirects, char *command_line,
     {
       int old_interactive;
 
-      reset_terminating_signals ();	/* XXX */
-      /* Cancel traps, in trap.c. */
-      restore_original_signals ();
-      subshell_environment &= ~SUBSHELL_IGNTRAP;
-
 ...
 
       /* Execve expects the command name to be in args[0].  So we
@@ -664,7 +689,7 @@ execute_disk_command (WORD_LIST *words, REDIRECT *redirects, char *command_line,
 
 `shell_execve`で`execve`が呼ばれています。
 
-```c
+```c:execute_cmd.c
 /* Call execve (), handling interpreting shell scripts, and handling
    exec failures. */
 int
@@ -683,14 +708,6 @@ shell_execve (char *command, char **args, char **env)
 ```
 
 `fork`なしで`execve`を呼び出しているのでPIDが変わらなさそうです。
-
-### 余談（Pager）
-
-`less`コマンドを追いかけていく中で`pager`についても追いかけたので、
-
-[//]: # (FIXME ここにPagerの記事URLを貼る)
-
-にまとめました。
 
 # まとめ
 
