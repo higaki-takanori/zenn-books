@@ -34,8 +34,9 @@ PHPでResult型を実装する際に[tadsan](https://x.com/tadsan)に相談に�
 ::: details 最終的なResult Interface
 ```php
 /**
+ * @phpstan-sealed Ok|Err
  * @template T
- * @template E
+ * @template-covariant E
  */
 interface Result
 {
@@ -100,7 +101,7 @@ final readonly class Ok implements Result
     /**
      * @return T
      */
-    public function unwrap(): mixed
+    public function unwrap()
     {
         return $this->value;
     }
@@ -115,7 +116,7 @@ final readonly class Ok implements Result
      * @param D $default
      * @return T
      */
-    public function unwrapOr(mixed $default): mixed
+    public function unwrapOr(mixed $default)
     {
         return $this->value;
     }
@@ -127,7 +128,7 @@ final readonly class Ok implements Result
 ::: details 最終的なErrクラス
 ```php
 /**
- * @template E
+ * @template-covariant E
  * @implements Result<never, E>
  */
 final readonly class Err implements Result
@@ -158,7 +159,7 @@ final readonly class Err implements Result
     /**
      * @return E
      */
-    public function unwrapErr(): mixed
+    public function unwrapErr()
     {
         return $this->value;
     }
@@ -168,7 +169,7 @@ final readonly class Err implements Result
      * @param D $default
      * @return D
      */
-    public function unwrapOr(mixed $default): mixed
+    public function unwrapOr(mixed $default)
     {
         return $default;
     }
@@ -191,7 +192,7 @@ Rustのコードを参考にしました。
 ```php
 /**
  * @template T
- * @template E
+ * @template-covariant E
  */
 interface Result {
     // 各関数を定義
@@ -200,6 +201,7 @@ interface Result {
 
 ```php
 /**
+ * @phpstan-sealed Ok|Err
  * @template T
  * @implements Result<T, never>
  */
@@ -217,7 +219,7 @@ final readonly class Ok implements Result {
 
 ```php
 /**
- * @template E
+ * @template-covariant E
  * @implements Result<never, E>
  */
 final readonly class Err implements Result {
@@ -348,7 +350,7 @@ interface Result
     /**
      * @return ($this is Result<T, never> ? T : never)
      */
-    public function unwrap(): mixed;
+    public function unwrap();
 }
 ```
 
@@ -362,7 +364,7 @@ final readonly class Ok implements Result
     /**
      * @return T
      */
-    public function unwrap(): mixed
+    public function unwrap()
     {
         return $this->value;
     }
@@ -402,7 +404,7 @@ interface Result
     /**
      * @return ($this is Result<never,E> ? E : never)
      */
-    public function unwrapErr(): mixed;
+    public function unwrapErr();
 }
 ```
 
@@ -432,7 +434,7 @@ final readonly class Err implements Result
     /**
      * @return E
      */
-    public function unwrapErr(): mixed
+    public function unwrapErr()
     {
         return $this->value;
     }
@@ -455,7 +457,7 @@ interface Result
      * @param D $default
      * @return ($this is Result<T, E> ? T|D : ($this is Result<never, E> ? D : T))
      */
-    public function unwrapOr(mixed $default): mixed;
+    public function unwrapOr(mixed $default);
 }
 ```
 
@@ -473,7 +475,7 @@ final readonly class Ok implements Result
      * @param D $default
      * @return T
      */
-    public function unwrapOr(mixed $default): mixed
+    public function unwrapOr(mixed $default)
     {
         return $this->value;
     }
@@ -492,7 +494,7 @@ final readonly class Err implements Result
      * @param D $default
      * @return D
      */
-    public function unwrapOr(mixed $default): mixed
+    public function unwrapOr(mixed $default)
     {
         return $default;
     }
@@ -507,6 +509,9 @@ https://phpstan.org/developing-extensions/allowed-subtypes
 
 
 あと、[phpstan-sealed](https://github.com/phpstan/phpstan-src/pull/4095)がリリースされると、AllowedSubTypesClassReflectionExtensionの代わりに、以下の記載だけで済むみたいです！
+
+（2025/11/09追記）リリースされました
+https://github.com/phpstan/phpdoc-parser/releases/tag/2.2.0
 
 ```php
 /** 
