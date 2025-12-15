@@ -4,6 +4,7 @@ emoji: "🕒"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["shell", "command", "less"]
 published: false
+publication_name: "levtech"
 ---
 
 この記事は [レバテック開発部 Advent Calendar 2025](https://qiita.com/advent-calendar/2025/levtech) 22日目の記事です。
