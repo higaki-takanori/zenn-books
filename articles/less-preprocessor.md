@@ -1,24 +1,16 @@
 ---
-title: "LESSコマンドは裏側でシェルが起動するって本当?"
-emoji: "🐚"
+title: "LESSコマンドの前処理はいつ設定される?"
+emoji: "🕒"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["shell", "command", "less"]
 published: false
 ---
 
+この記事は [レバテック開発部 Advent Calendar 2025](https://qiita.com/advent-calendar/2025/levtech) 22日目の記事です。
+
 # 結論
 
-環境変数の設定次第。
-
-シェルが起動するようにもできるし、起動しないようにもできる。
-
-lessはpreprocessor経由でファイルの解凍をしていることが理解できた。
-
-# はじめに
-
-[この記事](https://zenn.dev/higaki/articles/bat-command-process)で`less`が`sh`や`lesspipe`が裏側で起動していることを発見しました。
-
-どのようにこれらを呼び出しているか調べたくなったので、この記事にまとめることにしました。
+bashかつUbuntu環境では、`/etc/skel/.bashrc`に記載された`[ -x /usr/bin/lesspipe ] && eval "$(SHELL=/bin/sh lesspipe)"`によってデフォルトで設定される。
 
 # 環境
 
@@ -27,15 +19,17 @@ lessはpreprocessor経由でファイルの解凍をしていることが理解�
 
 # lessコマンド
 
-https://greenwoodsoftware.com/less/
+https://packages.debian.org/ja/sid/less
 
-less コマンドはオープンソースのファイルページャーです。
+>一度に画面全体 にテキストを表示できるメモリ効率の良いユーティリティです。
+> less には基本的な ページャ "more" よりも多くの機能があります。
+> GNU プロジェクトの一部として、 このプログラムは UNIX 派生システムの標準的なページャと広くみなされています。
 
 ## まずはlessを実行してみる
 
-lessは圧縮されたファイルも読み込めるということは知っていました。なので、普通のテキストファイルと圧縮されたファイルの両方を読み込んでみます。
+普通のテキストファイルと圧縮されたファイルの両方を読み込んでみます。
 
-まずは、適当なサンプルテキストをlessで読み込んでみます。
+まずは、適当なサンプルテキストを`less`で読み込んでみます。
 
 ```shell
 $ echo "this is sample text" > sample.txt
@@ -63,166 +57,9 @@ this is sample text
 
 同様にsample.txtの内容が見れています。
 
-## システムコールを見てみる
-
-この時のシステムコールを見てみます。
-
-```shell
-$ strace -f -o less_execve -e execve less sample.txt
-```
-
-```shell
-$ cat less_execve 
-103504 execve("/usr/bin/less", ["less", "sample.txt"], 0x7ffc9a5b4b40 /* 28 vars */) = 0
-103505 execve("/bin/sh", ["sh", "-c", "--", "/bin/bash -c \\ /usr/bin/lesspipe"...], 0x7fff155abbc0 /* 28 vars */) = 0
-103506 execve("/bin/bash", ["/bin/bash", "-c", " /usr/bin/lesspipe sample.txt"], 0x5e18559c19a8 /* 28 vars */) = 0
-103506 execve("/usr/bin/lesspipe", ["/usr/bin/lesspipe", "sample.txt"], 0x55ee468a66b0 /* 28 vars */) = 0
-103507 execve("/usr/bin/basename", ["basename", "/usr/bin/lesspipe"], 0x637d5680ea88 /* 28 vars */) = 0
-103507 +++ exited with 0 +++
-103506 --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=103507, si_uid=1000, si_status=0, si_utime=0, si_stime=0} ---
-103510 +++ exited with 0 +++
-103509 --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=103510, si_uid=1000, si_status=0, si_utime=0, si_stime=0} ---
-103511 execve("/usr/bin/tr", ["tr", "[:upper:]", "[:lower:]"], 0x637d5681aa20 /* 28 vars */) = 0
-103511 +++ exited with 0 +++
-103509 --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=103511, si_uid=1000, si_status=0, si_utime=0, si_stime=0} ---
-103509 +++ exited with 0 +++
-103508 --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=103509, si_uid=1000, si_status=0, si_utime=0, si_stime=0} ---
-103508 +++ exited with 0 +++
-103506 --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=103508, si_uid=1000, si_status=0, si_utime=0, si_stime=0} ---
-103506 +++ exited with 0 +++
-103505 --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=103506, si_uid=1000, si_status=0, si_utime=0, si_stime=0} ---
-103505 +++ exited with 0 +++
-103504 --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=103505, si_uid=1000, si_status=0, si_utime=0, si_stime=0} ---
-103504 --- SIGWINCH {si_signo=SIGWINCH, si_code=SI_KERNEL} ---
-103504 +++ exited with 0 +++
-```
-
-`sh`や`lesspipe`が呼び出されています。
-
-先に答えを言うと以下のようになります。
-
-まず、lessプロセスが生成されます。
-
-```shell
-103504 execve("/usr/bin/less", ["less", "sample.txt"], 0x7ffc9a5b4b40 /* 28 vars */) = 0
-```
-
-```mermaid
-graph TD;
-    LESS["less"];
-
-    LESS;
-```
-
-次にshのプロセスが生成されます。
-
-```shell
-103505 execve("/bin/sh", ["sh", "-c", "--", "/bin/bash -c \\ /usr/bin/lesspipe"...], 0x7fff155abbc0 /* 28 vars */) = 0
-```
-
-```mermaid
-graph TD;
-    LESS["less"];
-    SH["sh"];
-
-    LESS-->SH;
-```
-
-shのプロセスからbashのプロセスが生成されます。
-
-```shell
-103506 execve("/bin/bash", ["/bin/bash", "-c", " /usr/bin/lesspipe sample.txt"], 0x5e18559c19a8 /* 28 vars */) = 0
-```
-
-```mermaid
-graph TD;
-    LESS["less"];
-    SH["sh"];
-    BASH["bash"];
-    
-    LESS-->SH;
-    SH-->BASH;
-```
-
-bashは`-c`のオプションがついていたので、最適化のために自分自身のプロセスでそのままlesspipeを実行します。
-
-詳細は[こちらの記事を見てください](https://zenn.dev/higaki/articles/bat-command-process)
-
-```shell
-103506 execve("/usr/bin/lesspipe", ["/usr/bin/lesspipe", "sample.txt"], 0x55ee468a66b0 /* 28 vars */) = 0
-```
-
-```mermaid
-graph TD;
-    LESS["less"];
-    SH["sh"];
-    BASH["lesspipe"];
-    
-    LESS-->SH;
-    SH-->BASH;
-```
-
-こちらは詳細を見ていくとわかるのですが、lesspipeのプロセスがbasenameのプロセスを生成しています。
-
-```shell
-103507 execve("/usr/bin/basename", ["basename", "/usr/bin/lesspipe"], 0x637d5680ea88 /* 28 vars */) = 0
-```
-```mermaid
-graph TD;
-    LESS["less"];
-    SH["sh"];
-    BASH["lesspipe"];
-    BASENAME["basename"];
-    
-    LESS-->SH;
-    SH-->BASH;
-    BASH-->BASENAME;
-```
-
-## 本当にlesspipeがbasenameを生成しているのか?
-
-以下のコマンドでlesspipeを起動して確かめてみましょう。
-
-```shell
-$ LESSOPEN="| strace -o lesspipe_execve -e execve -f /usr/bin/lesspipe %s" less sample.txt.gz
-```
-
-これで`lesspipe_execve`が作成されたはずです。
-
-中身を見てみると、
-
-```shell
-$ cat lesspipe_execve
-106157 execve("/usr/bin/lesspipe", ["/usr/bin/lesspipe", "sample.txt.gz"], 0x7ffc8a8f40f0 /* 28 vars */) = 0
-106158 execve("/usr/bin/basename", ["basename", "/usr/bin/lesspipe"], 0x55fdef6d2a88 /* 28 vars */) = 0
-106158 +++ exited with 0 +++
-106157 --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=106158, si_uid=1000, si_status=0, si_utime=0, si_stime=0} ---
-106161 +++ exited with 0 +++
-106160 --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=106161, si_uid=1000, si_status=0, si_utime=0, si_stime=0} ---
-106162 execve("/usr/bin/tr", ["tr", "[:upper:]", "[:lower:]"], 0x55fdef6dea20 /* 28 vars */) = 0
-106162 +++ exited with 0 +++
-106160 --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=106162, si_uid=1000, si_status=0, si_utime=0, si_stime=0} ---
-106160 +++ exited with 0 +++
-106159 --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=106160, si_uid=1000, si_status=0, si_utime=0, si_stime=0} ---
-106159 execve("/usr/bin/gzip", ["gzip", "-dc", "sample.txt.gz"], 0x55fdef6dea30 /* 28 vars */) = 0
-106159 +++ exited with 0 +++
-106157 --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=106159, si_uid=1000, si_status=0, si_utime=0, si_stime=0} ---
-106157 +++ exited with 0 +++
-```
-
-```shell
-106158 execve("/usr/bin/basename", ["basename", "/usr/bin/lesspipe"], 0x55fdef6d2a88 /* 28 vars */) = 0
-```
-
-が表示されているため、
-
-lesspipeのプロセスからbasenameが生成されていることがわかります。
-
-
-
 ## lessのマニュアルを見る
 
-ここで、lessのマニュアルを見てみます。
+ここで、`less`のマニュアルを見てみます。
 
 ```shell
 $ man less
@@ -247,10 +84,13 @@ ENVIRONMENT VARIABLES
 
 ```
 
-lessは圧縮ファイルの解凍などless実行の前処理を行うことができます。
+`less`は圧縮ファイルの解凍など「less実行の前処理」を行うことができます。
 
 どのような前処理を行うかは環境変数の`LESSOPEN`に記載されています。
 
+:::message
+`LESSSECURE`を設定してセキュリティモードにすることで、この辺りの挙動が変わりますがこの記事では範囲外とします。
+:::
 
 :::details DESCRIPTION
 
@@ -490,7 +330,7 @@ LESSOPEN=| /usr/bin/lesspipe %s
 
 環境によって違うと思いますが、自分の環境では上記が設定されていました。
 
-自分の環境ではlessの前処理にはlesspipeを使用していそうです。
+自分の環境では`less`の前処理には`lesspipe`を使用していそうです。
 
 https://sources.debian.org/src/less/668-1/debian/lesspipe
 
@@ -506,31 +346,182 @@ $ cat /etc/skel/.bashrc | grep lesspipe
 [ -x /usr/bin/lesspipe ] && eval "$(SHELL=/bin/sh lesspipe)"
 ```
 
-`/etc/skel`とは、「新しく作成するユーザのホームディレクトリの雛形」なので、Ubuntuにユーザを追加した時点でbashrcに設定されています。
+`/etc/skel`とは、「新しく作成するユーザのホームディレクトリの雛形」なので、Ubuntuにユーザを追加した時点で`.bashrc`に設定されています。
 
 **参考**
 
 https://envader.plus/course/12/scenario/1129
 
+### lesspipe
+
 まずは`lesspipe`について実行してみます。
 
+`SHELL=/bin/sh lesspipe`は環境変数`SHELL`に`/bin/sh`を設定して、`lesspipe`を実行するコマンドです。
+
 ```shell
-$ lesspipe
+$ SHELL=/bin/sh lesspipe
 export LESSOPEN="| /usr/bin/lesspipe %s";
 export LESSCLOSE="/usr/bin/lesspipe %s %s";
 ```
 
-どうやら引数なしで実行すると「環境変数に`LESSOPEN`と`LESSCLOSE`を設定するコマンド」が出力されるようです。
+どうやら`lesspipe`は引数なしで実行すると「環境変数に`LESSOPEN`と`LESSCLOSE`を設定するコマンド」が出力されるようです。
+
+:::details 引数が0個の場合のlesspipe
+
+`$SHELL=/bin/sh` を設定しているので、`*)`に該当して、`$BASENAME`は`lessfile`ではないので、以下が実行されます。
+
+```shell
+echo "export LESSOPEN=\"| $FULLPATH %s\";"
+echo "export LESSCLOSE=\"$FULLPATH %s %s\";"
+```
+
+```shell
+..
+
+BASENAME=`basename $0`
+LESSFILE=lessfile
+
+..
+
+elif [ $# -eq 0 ] ; then
+	#
+	# must setup shell to use LESSOPEN/LESSCLOSE
+	#
+	# I have no idea how some of the more esoteric shells (es, rc) do
+	# things. If they don't do things in a Bourne manner, send me a patch
+	# and I'll incorporate it.
+	#
+
+	# first determine the full path of lessfile/lesspipe
+	# if you can determine a better way to do this, send me a patch, I've
+	# not shell-scripted for many a year.
+	FULLPATH=`cd \`dirname $0\`;pwd`/$BASENAME
+
+	case "$SHELL" in
+		*csh)
+			if [ $BASENAME = $LESSFILE ]; then
+				echo "setenv LESSOPEN \"$FULLPATH %s\";"
+				echo "setenv LESSCLOSE \"$FULLPATH %s %s\";"
+			else
+				echo "setenv LESSOPEN \"| $FULLPATH %s\";"
+				echo "setenv LESSCLOSE \"$FULLPATH %s %s\";"
+			fi
+			;;
+		*)
+			if [ $BASENAME = $LESSFILE ]; then
+				echo "export LESSOPEN=\"$FULLPATH %s\";"
+				echo "export LESSCLOSE=\"$FULLPATH %s %s\";"
+			else
+				echo "export LESSOPEN=\"| $FULLPATH %s\";"
+				echo "export LESSCLOSE=\"$FULLPATH %s %s\";"
+			fi
+			;;
+	esac
+
+	#echo "# If you tried to view a file with a name that starts with '#', you"
+	#echo "# might see this message instead of the file's contents."
+	#echo "# To view the contents, try to put './' ahead of the filename when"
+	#echo "# calling less."
+```
+
+https://sources.debian.org/src/less/668-1/debian/lesspipe
+
+:::
 
 ただこちらは標準出力に表示されただけで実際にこのコマンドが実行されたわけではありません。
+
+### eval
 
 これらを`eval`で実際に実行しています。
 
 ```shell
-$ [ -x /usr/bin/lesspipe ] && eval "$(SHELL=/bin/sh lesspipe)"
+$ eval "$(SHELL=/bin/sh lesspipe)"
+
+実質こうなる
+
+$ export LESSOPEN="| /usr/bin/lesspipe %s";
+$ export LESSCLOSE="/usr/bin/lesspipe %s %s";
 ```
 
+これで、`LESSOPEN`と`LESSCLOSE`が環境変数に設定されました。
 
+### 条件評価`[`
+
+最後に `[ -x /usr/bin/lesspipe ]` の部分を見てみます。
+
+`[`もコマンドなので、`man [`でマニュアルを見てみます。
+
+```shell
+$ man [
+```
+
+```
+NAME
+     test, [ – condition evaluation utility
+     
+SYNOPSIS
+     test expression
+     [ expression ]
+
+DESCRIPTION
+     The test utility evaluates the expression and, if it evaluates to true, returns a zero (true) exit status; otherwise it returns 1 (false).  If there is no expression, test also returns 1 (false).
+
+     All operators and flags are separate arguments to the test utility.
+
+     The following primaries are used to construct expression:
+...          
+        -x file       True if file exists and is executable.  True indicates only that the execute flag is on.  If file is a directory, true indicates that file can be searched.
+```
+
+条件を評価するコマンドとして動作するようです。
+
+`-x`オプションをつけると、ファイルが存在する、かつ、実行可能であるときに`true`を返します。
+
+```shell
+$ [ -x /usr/bin/lesspipe ]
+```
+
+こちらは`/usr/bin/lesspipe`が存在し、実行可能である場合に`true`を返すコマンドとなります。
+
+
+### まとめ
+
+最後に`.bashrc`の記載をまとめると、以下のようになります。
+
+```shell
+[ -x /usr/bin/lesspipe ] && eval "$(SHELL=/bin/sh lesspipe)"
+```
+
+`/usr/bin/lesspipe`が存在し、実行可能である場合に`LESSOPEN`と`LESSCLOSE`を環境変数に設定するコマンドが実行されます。
+
+処理の流れを記載していくと、
+
+```shell
+[ -x /usr/bin/lesspipe ] && eval "$(SHELL=/bin/sh lesspipe)"
+```
+```shell:/usr/bin/lesspipeが存在し、実行可能である
+true && eval "$(SHELL=/bin/sh lesspipe)"
+```
+```shell:lesspipeが引数0個で実行される
+eval "$(SHELL=/bin/sh lesspipe)"
+```
+```shell
+export LESSOPEN="| /usr/bin/lesspipe %s";
+export LESSCLOSE="/usr/bin/lesspipe %s %s";
+```
 
 # まとめ
 
+`less`コマンドの前処理がどこで設定されているかを見ていきました。
+
+この記事が誰かの参考になれば幸いです。
+
+# 参考
+
+https://qiita.com/jmatsuzawa/items/0cb53a5e555652ae78d3
+
+https://sources.debian.org/src/less/668-1/debian/lesspipe
+
+https://packages.debian.org/ja/sid/less
+
+https://envader.plus/course/12/scenario/1129
