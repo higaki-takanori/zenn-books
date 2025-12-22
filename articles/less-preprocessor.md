@@ -11,12 +11,7 @@ publication_name: "levtech"
 
 # 結論
 
-bashかつUbuntu環境では、`/etc/skel/.bashrc`に記載された`[ -x /usr/bin/lesspipe ] && eval "$(SHELL=/bin/sh lesspipe)"`によってデフォルトで設定される。
-
-# 環境
-
-- Proxmox VE
-  - Ubuntu 24.04
+bashかつUbuntu環境では、`/etc/skel/.bashrc`に記載された`[ -x /usr/bin/lesspipe ] && eval "$(SHELL=/bin/sh lesspipe)"`によってデフォルトの前処理が設定される。
 
 # lessコマンド
 
@@ -25,6 +20,19 @@ https://packages.debian.org/ja/sid/less
 >一度に画面全体 にテキストを表示できるメモリ効率の良いユーティリティです。
 > less には基本的な ページャ "more" よりも多くの機能があります。
 > GNU プロジェクトの一部として、 このプログラムは UNIX 派生システムの標準的なページャと広くみなされています。
+
+:::message
+`less`にはいろんな機能がありますが、今回は前処理に関する部分に注目します。
+:::
+
+`less`は`more`コマンドより多くの機能を持ったページャです。
+
+設定次第ですが、前処理によって対象のファイルが圧縮されているかに関わらずテキストの中身を確認できるようにできます。
+
+## 環境
+
+- Proxmox VE
+    - Ubuntu 24.04
 
 ## まずはlessを実行してみる
 
@@ -433,7 +441,7 @@ https://sources.debian.org/src/less/668-1/debian/lesspipe
 
 ### eval
 
-これらを`eval`で実際に実行しています。
+これらは`eval`で実際に実行されます。
 
 ```shell
 $ eval "$(SHELL=/bin/sh lesspipe)"
@@ -485,7 +493,7 @@ $ [ -x /usr/bin/lesspipe ]
 こちらは`/usr/bin/lesspipe`が存在し、実行可能である場合に`true`を返すコマンドとなります。
 
 
-### まとめ
+### 処理の流れ
 
 最後に`.bashrc`の記載をまとめると、以下のようになります。
 
@@ -510,6 +518,57 @@ eval "$(SHELL=/bin/sh lesspipe)"
 export LESSOPEN="| /usr/bin/lesspipe %s";
 export LESSCLOSE="/usr/bin/lesspipe %s %s";
 ```
+
+## 圧縮ファイルの内容を確認する処理
+
+せっかくなので、`lesspipe`がどのように圧縮ファイルの内容を確認しているかも見てみます。
+
+```shell
+$ lesspipe sample.txt.gz
+this is sample text
+```
+
+```shell:引数が1つのlesspipeの処理抜粋
+..
+
+if [ $# -eq 1 ] ; then
+	# we were called as LESSOPEN
+        ..
+	(
+	        ..
+		# Decode file for less
+		case `echo "$1" | tr '[:upper:]' '[:lower:]'` in
+		
+		        ..
+                                
+			# Note that this is out of alpha order so that we don't catch
+			# the gzipped tar files.
+			*.gz|*.z|*.dz)
+				gzip -dc "$1" ;;
+
+		        ..            
+		esac
+	) 2>/dev/null	
+..
+```
+
+まず、`echo "$1" | tr '[:upper:]' '[:lower:]'`の部分で、大文字のファイル名も処理できるようにファイル名の大文字を小文字に揃えています。
+
+```shell
+$ echo sample.txt.GZ | tr '[:upper:]' '[:lower:]'
+sample.txt.gz
+```
+
+次に、実際に解凍する処理です。
+
+今回の例だと`*.gz` に該当する部分が実行されています。
+
+```shell
+$ gzip -dc sample.txt.gz
+this is sample text
+```
+
+この出力を`less`コマンドのプロセスに渡すことで、`less`コマンドは圧縮ファイルも処理できるようになっています。
 
 # まとめ
 
