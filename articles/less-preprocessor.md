@@ -3,7 +3,7 @@ title: "LESSコマンドの前処理はいつ設定される?"
 emoji: "🕒"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["shell", "command", "less"]
-published: false
+published: true
 publication_name: "levtech"
 ---
 
