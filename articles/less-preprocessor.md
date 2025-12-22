@@ -3,7 +3,7 @@ title: "LESSコマンドの前処理はいつ設定される?"
 emoji: "🕒"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["shell", "command", "less"]
-published: false
+published: true
 publication_name: "levtech"
 ---
 
@@ -64,7 +64,7 @@ this is sample text
 ~
 ```
 
-同様にsample.txtの内容が見れています。
+自分の環境の場合（Ubuntu24.04のデフォルト）は前処理が設定されているため、先ほどと同様の圧縮ファイルの内容をみることができます。
 
 ## lessのマニュアルを見る
 
